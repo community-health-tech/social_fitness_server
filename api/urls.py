@@ -1,6 +1,7 @@
 from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from api import views
+from story_manager import api as story_api
 
 
 urlpatterns = [
@@ -17,6 +18,10 @@ urlpatterns = [
     # Logged Family's Activities in 7 days
     url(r'^group/activities/7d/(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
         views.UserGroupActivities.as_view()),
+
+    # Logged Family's Stories
+    url(r'^group/stories/all$',
+        story_api.UserStoryList.as_view()),
 
     # ADMIN VIEWS
     # People list
