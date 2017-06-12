@@ -52,7 +52,13 @@ def __create_fitbit_account (profile, credential):
         Given a Profile and a credential Token, create a new Fitbit Account object
         INVARIANT: The new object does not exist in the database
     """
+    fitbit_account = None
     if __does_user_id_exists(credential):
+        fitbit_account = Account.objects.get(user_id = credential["user_id"])
+        fitbit_account.fullname = profile['user']['fullName']
+        fitbit_account.user_id = credential["user_id"]
+        fitbit_account.access_token = credential["access_token"]
+        fitbit_account.refresh_token = credential["refresh_token"]
         return "Fitbit account has existed"
     else:
         fitbit_account = Account.objects.create(
@@ -61,9 +67,9 @@ def __create_fitbit_account (profile, credential):
             access_token = credential["access_token"],
             refresh_token = credential["refresh_token"]
         )
-        fitbit_account.set_expires_at_in_unix(credential["expires_at"])
-        fitbit_account.save()
-        return "Fitbit account has been created"
+    fitbit_account.set_expires_at_in_unix(credential["expires_at"])
+    fitbit_account.save()
+    return "Fitbit account has been set up"
 
 def __does_user_id_exists (credential):
     return Account.objects.filter(user_id = credential["user_id"]).exists()
