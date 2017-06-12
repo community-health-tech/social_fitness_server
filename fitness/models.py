@@ -1,7 +1,6 @@
 from django.db import models
-from fitbit.api import Fitbit
 from fitness_connector.models import Account
-from people.models import Person, Membership
+from people.models import Person, Group, Membership
 
 
 # Constants
@@ -46,12 +45,25 @@ class PersonFitness():
     Describes a Person's Fitness
     """
 
-    def __init__(self, person_id, activities):
+    def __init__(self, person_id, activities, role=None):
         person = Person.objects.get(pk=person_id)
         account = Account.objects.get(person__pk=person_id)
         self.id = person_id
         self.name = person.name
         self.last_pull_time = account.last_pull_time
+        self.activities = activities
+        self.role = role
+
+
+class GroupFitness():
+    """
+    Describes every Person's Fitness in a Group group_id
+    """
+
+    def __init__(self, group_id, activities):
+        group = Group.objects.get(pk=group_id)
+        self.id = group.id
+        self.name = group.name
         self.activities = activities
 
 
@@ -62,7 +74,7 @@ class PersonFitnessFactory():
     """
 
     @staticmethod
-    def get(person_id, start_date, end_date):
+    def get(person_id, start_date, end_date, role):
         """
         :return: PersonFitness between start_date to end_date
         """
@@ -71,10 +83,10 @@ class PersonFitnessFactory():
             .filter(date__lte=end_date) \
             .filter(person_id__exact=person_id) \
             .only("date", "steps", "calories", "distance")
-        return PersonFitness(person_id, daily_activities)
+        return PersonFitness(person_id, daily_activities, role)
 
     @staticmethod
-    def get_one_day(person_id, this_date):
+    def get_one_day(person_id, this_date, role):
         """
         :return: PersonFitness on this_date
         """
@@ -82,13 +94,24 @@ class PersonFitnessFactory():
             .filter(date__exact=this_date)\
             .filter(person_id__exact=person_id)\
             .only("date", "steps", "calories", "distance")
-        return PersonFitness(person_id, activity)
+        return PersonFitness(person_id, activity, role)
 
 
+class GroupFitnessFactory():
+    """
+    Factory class to produce a GroupFitness
+    """
 
-
-
-
-
-
-
+    @staticmethod
+    def get(group_id, start_date, end_date):
+        """
+        :return: GroupFitness between start_date to end_date
+        """
+        member_activities = []
+        for membership in Membership.objects.filter(group=group_id):
+            member_activities.append(PersonFitnessFactory.get(
+                membership.person.id,
+                start_date,
+                end_date,
+                membership.role))
+        return GroupFitness(group_id, member_activities)
