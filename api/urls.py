@@ -2,6 +2,7 @@ from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from api import views
 from story_manager import api as story_api
+from challenges import api as challenges_api
 
 
 urlpatterns = [
@@ -19,13 +20,18 @@ urlpatterns = [
     url(r'^group/activities/7d/(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
         views.UserGroupActivities.as_view()),
 
-    # Logged Family's Stories
+    # Logged Family's: All Stories
     url(r'^group/stories/all$',
         story_api.UserStoryList.as_view()),
 
     # Logged Family's: Specific Story
     url(r'^group/stories/(?P<story_id>[0-9]+)/$',
         story_api.UserStory.as_view()),
+
+    # Logged Family's: all challenges that can be selected
+    url(r'^group/challenges/available$',
+        challenges_api.Available.as_view()),
+
 
     # ADMIN VIEWS
     # People list
@@ -66,7 +72,6 @@ urlpatterns = [
     url(r'^family/(?P<family_id>[0-9]+)/activities/7d/'
         r'(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
         views.PeopleActivities.as_view()),
-
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
