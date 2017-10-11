@@ -1,0 +1,56 @@
+[
+  {
+    "fields": {
+      "personal": "Person",
+      "pronoun": "Person",
+      "possessive": "They"
+    },
+    "model": "people.pronoun",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "personal": "Mom",
+      "pronoun": "She",
+      "possessive": "Her"
+    },
+    "model": "people.pronoun",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "personal": "Father",
+      "pronoun": "He",
+      "possessive": "Him"
+    },
+    "model": "people.pronoun",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "personal": "Child",
+      "pronoun": "them",
+      "possessive": "their"
+    },
+    "model": "people.pronoun",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "personal": "Daughter",
+      "pronoun": "she",
+      "possessive": "her"
+    },
+    "model": "people.pronoun",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "personal": "Son",
+      "pronoun": "he",
+      "possessive": "him"
+    },
+    "model": "people.pronoun",
+    "pk": 6
+  }
+]
