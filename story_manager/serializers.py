@@ -19,6 +19,12 @@ class GroupStorySerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'cover_url', 'def_url', 'is_current',
                   'current_page')
 
+    def update(self, instance, validated_data):
+        instance.is_current = validated_data.get('is_current', instance.is_current)
+        instance.current_page = validated_data.get('current_page', instance.current_page)
+        instance.save()
+        return instance
+
 
 class GroupStoryListSerializer(serializers.Serializer):
     current_story_id = serializers.ReadOnlyField()

@@ -23,6 +23,10 @@ urlpatterns = [
     url(r'^group/stories/all$',
         story_api.UserStoryList.as_view()),
 
+    # Logged Family's: Specific Story
+    url(r'^group/stories/(?P<story_id>[0-9]+)/$',
+        story_api.UserStory.as_view()),
+
     # ADMIN VIEWS
     # People list
     url(r'^people/$', views.PersonList.as_view()),
