@@ -1,77 +1,76 @@
 from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
-from api import views
-from story_manager import api as story_api
-from challenges import api as challenges_api
+from fitness.api import UserGroupActivities
+from people.api import UserInfo, UserGroupInfo
+from story_manager.api import UserStory, UserStoryList
+from challenges.api import Available
 
 
 urlpatterns = [
+    # REST FRAMEWORK
     # User Authentication
     url(r'', include('rest_framework.urls', namespace='rest_framework')),
 
     # LOGGED USER'S VIEWS
     # Logged User's details
-    url(r'^person/info/$', views.UserInfo.as_view()),
+    url(r'^person/info/$', UserInfo.as_view()),
 
     # Logged Family's details
-    url(r'^group/info/', views.UserGroupInfo.as_view()),
+    url(r'^group/info/', UserGroupInfo.as_view()),
 
     # Logged Family's Activities in 7 days
-    url(r'^group/activities/7d/(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
-        views.UserGroupActivities.as_view()),
+    url(r'^group/activities/7d/'
+        r'(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
+        UserGroupActivities.as_view()),
 
     # Logged Family's: All Stories
-    url(r'^group/stories/all$',
-        story_api.UserStoryList.as_view()),
+    url(r'^group/stories/all$', UserStoryList.as_view()),
 
     # Logged Family's: Specific Story
-    url(r'^group/stories/(?P<story_id>[0-9]+)/$',
-        story_api.UserStory.as_view()),
+    url(r'^group/stories/(?P<story_id>[0-9]+)/$', UserStory.as_view()),
 
     # Logged Family's: all challenges that can be selected
-    url(r'^group/challenges/available$',
-        challenges_api.Available.as_view()),
-
-
-    # ADMIN VIEWS
-    # People list
-    url(r'^people/$', views.PersonList.as_view()),
-    url(r'^person/list/$', views.PersonList.as_view()),
-
-    # Person's details
-    url(r'^person/(?P<person_id>[0-9]+)/$', views.PersonInfo.as_view()),
-
-    # Family list
-    url(r'^groups/$', views.GroupList.as_view()),
-    url(r'^group/list/$', views.GroupList.as_view()),
-
-    # Family's details
-    url(r'^group/(?P<group_id>[0-9]+)/$', views.GroupInfo.as_view()),
-
-
-    # Person's Activities in one day
-    # Eg: /fitbit/activity/person/1/1d/2017-05-28/
-    url(r'^person/(?P<person_id>[0-9]+)/activities/1d/'
-        r'(?P<date_string>\d{4}-\d{2}-\d{2})$',
-        views.Person1DActivity.as_view()),
-
-    # Person's Activities in 7 days
-    # Eg: /fitbit/activity/person/1/7d/2017-05-28/
-    url(r'^person/(?P<person_id>[0-9]+)/activities/7d/'
-        r'(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
-        views.PersonActivities.as_view()),
-
-    # Group activities in 7 days. I.e. /group/{group_id}/activities/7d/{start_date}
-    # Eg: /group/1/activities/7d/2017-05-28/
-    url(r'^group/(?P<group_id>[0-9]+)/activities/7d/'
-        r'(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
-        views.GroupActivities.as_view()),
-
-    # Group activities in 7 days. I.e. /family/{group_id}/activities/7d/{start_date}
-    # Eg: /family/1/activities/7d/2017-05-28/
-    url(r'^family/(?P<family_id>[0-9]+)/activities/7d/'
-        r'(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
-        views.PeopleActivities.as_view()),
+    url(r'^group/challenges/available$', Available.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
+
+    #
+    # # ADMIN VIEWS
+    # # People list
+    # url(r'^people/$', views.PersonList.as_view()),
+    # url(r'^person/list/$', views.PersonList.as_view()),
+    #
+    # # Person's details
+    # url(r'^person/(?P<person_id>[0-9]+)/$', views.PersonInfo.as_view()),
+    #
+    # # Family list
+    # url(r'^groups/$', views.GroupList.as_view()),
+    # url(r'^group/list/$', views.GroupList.as_view()),
+    #
+    # # Family's details
+    # url(r'^group/(?P<group_id>[0-9]+)/$', views.GroupInfo.as_view()),
+    #
+    # # Person's Activities in one day
+    # # Eg: /fitbit/activity/person/1/1d/2017-05-28/
+    # url(r'^person/(?P<person_id>[0-9]+)/activities/1d/'
+    #     r'(?P<date_string>\d{4}-\d{2}-\d{2})$',
+    #     views.Person1DActivity.as_view()),
+    #
+    # # Person's Activities in 7 days
+    # # Eg: /fitbit/activity/person/1/7d/2017-05-28/
+    # url(r'^person/(?P<person_id>[0-9]+)/activities/7d/'
+    #     r'(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
+    #     views.PersonActivities.as_view()),
+    #
+    # # Group activities in 7 days. I.e. /group/{group_id}/activities/7d/{start_date}
+    # # Eg: /group/1/activities/7d/2017-05-28/
+    # url(r'^group/(?P<group_id>[0-9]+)/activities/7d/'
+    #     r'(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
+    #     views.GroupActivities.as_view()),
+    #
+    # # Group activities in 7 days. I.e. /family/{group_id}/activities/7d/{start_date}
+    # # Eg: /family/1/activities/7d/2017-05-28/
+    # url(r'^family/(?P<family_id>[0-9]+)/activities/7d/'
+    #     r'(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
+    #     views.PeopleActivities.as_view()),
