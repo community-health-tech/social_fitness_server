@@ -2,7 +2,7 @@ from django.http import Http404
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from challenges.models import AvailableChallenges
+from challenges.available_challenges import AvailableChallenges
 from challenges.serializers import AvailableChallengesSerializer
 from people.models import Person, Group
 
