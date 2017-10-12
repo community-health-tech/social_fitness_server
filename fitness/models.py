@@ -1,9 +1,26 @@
+from datetime import timedelta
+
 from django.db import models
 from fitness_connector.models import Account
 from people.models import Person, Group, Membership
 
 
-# Constants
+# CONSTANTS
+DATE_DELTA_1D = timedelta(days=1)
+DATE_DELTA_7D = timedelta(days=7)
+STAGE_PRECONTEMPLATIVE = 1
+STAGE_CONTEMPLATIVE = 2
+STAGE_PREPARATION = 3
+STAGE_ACTION = 4
+STAGE_MAINTENANCE = 5
+STAGES = (
+    (STAGE_PRECONTEMPLATIVE, "Precontemplative"),
+    (STAGE_CONTEMPLATIVE, "Contemplative"),
+    (STAGE_PREPARATION, "Preparation"),
+    (STAGE_ACTION, "Action"),
+    (STAGE_MAINTENANCE, "Maintenance")
+)
+
 ACTIVITY_BYMINS_STRING = "{0} on {1} {2}"
 ACTIVITY_BYDAY_STRING = "{0} on {1}"
     

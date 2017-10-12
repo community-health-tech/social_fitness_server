@@ -1,7 +1,11 @@
+from dateutil import parser
 from django.db import models
+from django.db.models import Avg
+
 from challenges import strings
 from people.family import FamilyDyad
 from people.models import Person, Group, Membership, ROLE_CHILD, ROLE_PARENT
+from fitness.models import ActivityByDay, DATE_DELTA_1D, DATE_DELTA_7D
 
 # Constants
 UNIT_STEPS = "steps"
@@ -222,11 +226,43 @@ class PersonFitnessMilestone(models.Model):
     @staticmethod
     def get_latest_from_person(person):
         """
-        Get the latest milestone of a Person
         :param person: Person of interest
-        :return: the latest PersonFitnessMilestone instance of the said Person
+        :return: The latest PersonFitnessMilestone instance of the said Person
         """
         return PersonFitnessMilestone.objects.latest()
+
+    @staticmethod
+    def create_from_7d_average(person, role, start_date_string, level_group):
+        start_date = parser.parse(start_date_string)
+        end_date = start_date + DATE_DELTA_7D
+        parent_activities = ActivityByDay.objects\
+            .filter(
+            person = person,
+            date__gte = start_date,
+            date__lt = end_date)\
+            .aggregate(
+            steps = Avg("steps"),
+            calories = Avg("calories"),
+            active_minutes = Avg("active_minutes"),
+            distance = Avg("distance")
+        )
+
+        milestone = PersonFitnessMilestone.objects.create(
+            person=person,
+            start_datetime=start_date,
+            end_datetime=end_date,
+            steps=parent_activities["steps"],
+            calories=parent_activities["calories"],
+            active_minutes=parent_activities["active_minutes"],
+            active_minutes_moderate=0,
+            active_minutes_vigorous=0,
+            distance=parent_activities["distance"],
+            level_group=level_group
+        )
+        milestone.save()
+
+        return milestone
+
 
 
 # Regular models
@@ -234,8 +270,14 @@ class AvailableChallenges():
     """Encapsulates all available challenges for a particular group"""
 
     def __init__(self, group):#, group, level, milestone):
-        person = group.members.get(membership__role=ROLE_PARENT)
-        milestone = PersonFitnessMilestone.get_latest_from_person(person)
+        __TEMP_DATE = "2017-06-01"
+        __TEMP_LEVEL_GROUP = LevelGroup.objects.get(pk=1)
+
+        caregiver = group.members.get(membership__role=ROLE_PARENT)
+        #milestone = PersonFitnessMilestone.get_latest_from_person(person)
+        milestone = PersonFitnessMilestone.create_from_7d_average(
+            caregiver, ROLE_PARENT, __TEMP_DATE, __TEMP_LEVEL_GROUP)
+
         level = Level.get_level_for_group(group, milestone)
         dyad = FamilyDyad(group)
         target_strings = self.__get_target_strings(level, dyad)
@@ -278,7 +320,7 @@ class Challenge():
         concrete_goal = goal
         if level.goal_is_percent :
             concrete_goal =  (goal * milestone.get_by_unit(level.unit)) / 100
-        return int(concrete_goal)
+        return int(round(concrete_goal, -1))
 
     def __get_text (self, level, target_strings):
         return strings.get_text(

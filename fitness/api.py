@@ -1,19 +1,14 @@
-from datetime import timedelta
 from dateutil import parser
 from django.http import Http404
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from fitness.models import DATE_DELTA_1D, DATE_DELTA_7D
 from fitness.models import GroupFitnessFactory, PersonFitnessFactory
 from fitness.serializers import GroupFitnessSerializer, PersonFitnessSerializer
 from fitness_connector.activity import PersonActivity
 from people.models import Person, Group, Membership
-
-
-# CONSTANTS
-DATE_DELTA_1D = timedelta(days=1)
-DATE_DELTA_7D = timedelta(days=7)
 
 
 # CLASSES

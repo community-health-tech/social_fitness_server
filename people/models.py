@@ -28,6 +28,13 @@ class Group(models.Model):
     def __str__(self):
         return self.name
 
+    def get_person_by_role(self, role):
+        for person in self.activities:
+            if person.role == role :
+                person_of_interest = person
+                return person_of_interest
+        raise Exception("No Person of that role")
+
 
 class Pronoun(models.Model):
     MEMBERSHIP_STRING = "{0}, {1}, {2}"
