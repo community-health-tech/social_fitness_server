@@ -3,8 +3,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from fitness.api import UserGroupActivities
 from people.api import UserInfo, UserGroupInfo
 from story_manager.api import UserStory, UserStoryList
-from challenges.api import Available
-
+from challenges.api import Available, Create, Current
 
 urlpatterns = [
     # REST FRAMEWORK
@@ -31,9 +30,16 @@ urlpatterns = [
 
     # Logged Family's: all challenges that can be selected
     url(r'^group/challenges/available$', Available.as_view()),
+
+    # Logged Family's: create a new challenge from available challenges
+    url(r'^group/challenges/create$', Create.as_view()),
+
+    # Logged Family's: create a new challenge from available challenges
+    url(r'^group/challenges/current$', Current.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
+
 
     #
     # # ADMIN VIEWS

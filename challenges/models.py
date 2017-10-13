@@ -1,9 +1,10 @@
 from dateutil import parser
 from django.db import models
 from django.db.models import Avg
+from django.utils import timezone
 
 from challenges import strings
-from people.models import Person, Group, Membership, ROLE_CHILD, ROLE_PARENT
+from people.models import Person, Group, Membership
 from fitness.models import ActivityByDay, DATE_DELTA_1D, DATE_DELTA_7D
 
 # Constants
@@ -80,6 +81,7 @@ class Level(models.Model):
         )
 
     def get_target_strings(self):
+        # type: () -> object
         return {
             strings.KEY_GOAL: str(self.goal),
             strings.KEY_GOAL_UNIT: self.unit,
@@ -89,22 +91,17 @@ class Level(models.Model):
 
     @staticmethod
     def get_level_for_group(group, milestone):
-        level = None
         num_challenges = GroupChallenge.objects.filter(group=group).count()
         if num_challenges > 0:
-            level = Level.get_next_level(group, milestone)
+            return Level.get_next_level(group, milestone)
         else:
-            level = Level.get_first_level(group, milestone)
-        return level
+            return Level.get_first_level(group, milestone)
 
     @staticmethod
     def get_next_level(group, milestone):
         group_challenge = GroupChallenge.objects.filter(group=group).latest()
-        person_challenge = PersonChallenge.objects\
-            .get(group_challenge=group_challenge)
-        prev_level = Level.objects.get(level=person_challenge.level)
-        next_level = Level.objects.get(level=prev_level)
-        return next_level
+        level = group_challenge.level
+        return level.next_level
 
     @staticmethod
     def get_first_level(group, milestone):
@@ -123,20 +120,22 @@ class GroupChallenge(models.Model):
     duration = models.CharField(max_length=16, choices=Duration, blank=False)
     start_datetime = models.DateTimeField(blank=False)
     end_datetime = models.DateTimeField(blank=False)
-    completed_datetime = models.DateTimeField()
+    completed_datetime = models.DateTimeField(blank=True, null=True)
+    level = models.ForeignKey(Level, blank=False)
+
+    class Meta:
+        get_latest_by = "end_datetime"
 
     def __str__(self):
-        return Level.MEMBERSHIP_STRING.format(
+        return GroupChallenge.MEMBERSHIP_STRING.format(
             self.group.name,
             self.duration,
             self.start_datetime,
             self.end_datetime
         )
 
-    class Meta:
-        get_latest_by = "end_datetime"
-
     def get_target_strings(self):
+        # type: () -> object
         """
         :return: the target strings for the instance of the GroupChallenge.
         Invariant: All group members has the same goal, unit, and durations
@@ -147,8 +146,62 @@ class GroupChallenge(models.Model):
             .latest(field_name="end_datatime")
         target_strings = {strings.KEY_GOAL_DURATION: self.duration}
         additional_target_strings = person_challenge.get_target_strings()
-
         return strings.expand_target_strings(target_strings, additional_target_strings)
+
+    def add_member_challenges(self, data):
+        """
+        Create PersonChallenges for this GroupChallenges using data
+        :param data: Dict of input data from AvailableChallengeSerializer
+        :return: List of PersonChallenges that was created
+        """
+        member_challenges = []
+        group = self.group
+        members = group.members.all()
+        for person in members :
+            member_challenges.append(PersonChallenge.create_from_data(person, self, data))
+        return member_challenges
+
+    @staticmethod
+    def is_there_a_running_challenge(this_group):
+        """
+        :param this_group: Group which to be checked
+        :return: True if there is GroupChallenge that ended in the future
+        """
+        running_challenges = GroupChallenge.objects\
+            .filter(group=this_group,
+                    end_datetime__gte=timezone.now(),
+                    completed_datetime__isnull=True)
+        return (running_challenges.exists())
+
+    @staticmethod
+    def create_from_data(group, data):
+        """
+        :param group: Group in which the GroupChallenge will be created
+        :param data: Dict of input data from AvailableChallengeSerializer
+        :return: GroupChallenge that has been saved
+        """
+        start_datetime = timezone.now()
+        end_datetime = GroupChallenge.__get_end_date(start_datetime, data)
+        level = Level.objects.get(id=data["level_id"])
+
+        group_challenge = GroupChallenge.objects.create(
+            group = group,
+            duration = data["total_duration"],
+            start_datetime = start_datetime,
+            end_datetime = end_datetime,
+            level=level
+        )
+        group_challenge.save()
+        group_challenge.add_member_challenges(data)
+        return group_challenge
+
+    @staticmethod
+    def __get_end_date(start_datetime, data):
+        total_duration = data['total_duration']
+        if total_duration == "1d" :
+            return start_datetime + DATE_DELTA_1D
+        elif total_duration == "7d" :
+            return start_datetime + DATE_DELTA_7D
 
 
 class PersonChallenge(models.Model):
@@ -163,14 +216,14 @@ class PersonChallenge(models.Model):
     unit_duration = models.CharField(max_length=16, choices=Duration, blank=False)
 
     def __str__(self):
-        return Level.MEMBERSHIP_STRING.format(
+        return PersonChallenge.MEMBERSHIP_STRING.format(
             self.person.name,
             self.group_challenge.duration,
             self.unit_goal,
             self.unit,
             self.get_unit_duration_display(),
-            self.start_datetime,
-            self.end_datetime
+            self.group_challenge.start_datetime,
+            self.group_challenge.end_datetime
         )
 
     def get_target_strings(self):
@@ -179,6 +232,25 @@ class PersonChallenge(models.Model):
             strings.KEY_GOAL_UNIT: self.unit,
             strings.KEY_GOAL_DURATION: DURATIONS.get(self.unit_duration)
         }
+
+    @staticmethod
+    def create_from_data(person, group_challenge, data):
+        """
+        :param person: Person that will be associated with the PersonChallenge
+        :param group_challenge: Group that will be associated with the PersonChallenge
+        :param data: Dict of input data from AvailableChallengeSerializer
+        :return: PersonChallenge that from the input parameters
+        """
+        person_challenge = PersonChallenge.objects.create(
+            person = person,
+            group_challenge =  group_challenge,
+            level = group_challenge.level,
+            unit = data["unit"],
+            unit_goal = data["goal"],
+            unit_duration = data["unit_duration"]
+        )
+        person_challenge.save()
+        return person_challenge
 
 
 class PersonFitnessMilestone(models.Model):
