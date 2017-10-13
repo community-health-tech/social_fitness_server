@@ -22,7 +22,7 @@ STRINGS_EN_US = {
         PICK_SUBTEXT: "%PERSON1_NAME%, you and %PERSON2_PERSONAL% need to do one of these adventures within %TOTAL_DURATION%.",
         PICK_DESC: "Walk around %GOAL% steps every %GOAL_DURATION%!",
 
-        CONFIRM_TEXT: "Walk around %GOAL% %UNIT% every %GOAL_DURATION%",
+        CONFIRM_TEXT: "Walk around %GOAL% steps every %GOAL_DURATION%",
         CONFIRM_SUBTEXT: "As an example, walking around the Boston Common is 2000 steps.",
 
         INFO_TEXT: "This is your current Steps Adventure",
@@ -51,6 +51,17 @@ def get_text(unitOfChallenge, textKey, targetStrings):
         output = output.replace(key, target)
 
     return output
+
+
+def get_target_strings(level, dyad):
+    target_strings = {}
+    dyad_target_strings = dyad.get_target_strings()
+    level_target_strings = level.get_target_strings()
+
+    target_strings.update(dyad_target_strings)
+    target_strings.update(level_target_strings)
+
+    return target_strings
 
 
 def expand_target_strings(targetStrings, additionalStrings):
