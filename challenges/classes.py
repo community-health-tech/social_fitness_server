@@ -18,11 +18,11 @@ class ListOfAvailableChallenges():
         milestone = PersonFitnessMilestone.create_from_7d_average(
             caregiver, ROLE_PARENT, __TEMP_DATE, __TEMP_LEVEL_GROUP)
         level = Level.get_level_for_group(group, milestone)
-        target_strings = strings.get_target_strings(level, dyad)
+        str_dict = strings.get_string_dict(level, dyad)
 
-        self.text = strings.get_text(UNIT_STEPS, strings.PICK_TEXT, target_strings)
-        self.subtext = strings.get_text(UNIT_STEPS, strings.PICK_SUBTEXT, target_strings)
-        self.challenges = self.make_list_of_challenges(level, milestone, target_strings)
+        self.text = strings.get_text(UNIT_STEPS, strings.PICK_TEXT, str_dict)
+        self.subtext = strings.get_text(UNIT_STEPS, strings.PICK_SUBTEXT, str_dict)
+        self.challenges = self.make_list_of_challenges(level, milestone, str_dict)
         self.level_id = level.pk
         self.level_order = level.order
 
@@ -72,10 +72,10 @@ class CurrentChallenge():
         """
         dyad = FamilyDyad(group_challenge.group)
         level = group_challenge.level
-        target_strings = strings.get_target_strings(level, dyad)
+        str_dict = strings.get_string_dict(level, dyad)
 
-        self.text = self.__get_text(level.unit, is_new, target_strings)
-        self.subtext = self.__get_subtext(level.unit, is_new, target_strings)
+        self.text = self.__get_text(level.unit, is_new, str_dict)
+        self.subtext = self.__get_subtext(level.unit, is_new, str_dict)
         self.total_duration = group_challenge.duration
         self.start_datetime = group_challenge.start_datetime
         self.end_datetime = group_challenge.end_datetime

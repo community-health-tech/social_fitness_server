@@ -1,4 +1,7 @@
 # STRING CONSTANTS
+import re
+import sys
+
 KEY_GOAL = "%GOAL%"
 KEY_GOAL_UNIT = "%KEY_GOAL_UNIT%"
 KEY_GOAL_DURATION = "%GOAL_DURATION%"
@@ -37,23 +40,25 @@ STRINGS_EN_US = {
 }
 
 # FUNCTIONS
-def get_text(unitOfChallenge, textKey, targetStrings):
+def get_text(unit, text_key, str_dict):
     """
     Get the text key String based on a unit of challenge
-    :param unitOfChallenge: unit of the challenge as defined in models.Unit
-    :param textKey: the type of text that is needed
-    :param targetStrings: a dictionary of key and target text
-    :return: the text with the key string replaces with target string
+    :param unit: unit of the challenge as defined in models.Unit
+    :param textKey: String of the type of text that is needed
+    :param targetStrings: Dict of key and target texts
+    :return: String with the key string replaces with target string
     """
-    output = str(STRINGS_EN_US[unitOfChallenge][textKey])
-    for key in targetStrings:
-        target = targetStrings[key]
-        output = output.replace(key, target)
-
-    return output
+    text = str(STRINGS_EN_US[unit][text_key])
+    return __get_text_using_regex(text, str_dict)
 
 
-def get_target_strings(level, dyad):
+def get_string_dict(level, dyad):
+    """
+    Given a Level
+    :param level:
+    :param dyad:
+    :return:
+    """
     target_strings = {}
     dyad_target_strings = dyad.get_target_strings()
     level_target_strings = level.get_target_strings()
@@ -64,14 +69,51 @@ def get_target_strings(level, dyad):
     return target_strings
 
 
-def expand_target_strings(targetStrings, additionalStrings):
+def expand_string_dict(targetStrings, additionalStrings):
     """
     Add additionalStrings to targetStrings
     :param targetStrings:
     :param additionalStrings:
     :return: An expanded targetStrings
     """
-    for key in additionalStrings:
-        targetStrings[key] = additionalStrings[key]
-
+    for key in additionalStrings: targetStrings[key] = additionalStrings[key]
     return targetStrings
+
+# HELPER FUNCTIONS
+def __get_text_using_replace (string, str_dict):
+    """
+    Given a string, replace the occurrence of keys in str_dict with the values
+    :param string:
+    :param str_dict:
+    :return: Str
+    """
+    for key in str_dict:
+        target = str_dict[key]
+        string = string.replace(key, target)
+    return string
+
+def __get_text_using_regex(text, str_dict):
+    """
+    Given a string, replace the occurrence of keys in str_dict with the values.
+    This is the more efficient approach for replacement by using Regex.
+    :param string:
+    :param str_dict:
+    :return: Str
+    """
+    pattern, rep = __get_replacement_pattern(str_dict)
+    return pattern.sub(lambda m: rep[re.escape(m.group(0))], text)
+
+def __get_replacement_pattern(str_dict):
+    """
+    :param str_dict: Dict of key and target_text pairs
+    :return: RegularExpression object
+    """
+    if sys.version_info[0] < 3:
+        iters = str_dict.iteritems()
+    else:
+        iters = str_dict.items()
+
+    rep = dict((re.escape(k), v) for k, v in iters)
+    pattern = re.compile("|".join(str_dict.keys()))
+
+    return pattern, rep
