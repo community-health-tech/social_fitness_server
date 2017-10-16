@@ -1,6 +1,6 @@
 from challenges import strings
 from challenges.models import LevelGroup, PersonFitnessMilestone, Level, \
-    GroupChallenge
+    GroupChallenge, PersonChallenge
 from challenges.models import UNIT_STEPS
 from people.family import FamilyDyad
 from people.models import ROLE_PARENT
@@ -59,7 +59,7 @@ class AvailableChallenge():
             return goal
 
     def __get_target_strings(self, target_strings):
-        target_strings[strings.KEY_GOAL] = str(self.goal)
+        target_strings[strings.KEY_GOAL] = '{:,}'.format(self.goal)
         return target_strings
 
 
@@ -70,9 +70,15 @@ class CurrentChallenge():
         """
         :type group_challenge: GroupChallenge
         """
-        dyad = FamilyDyad(group_challenge.group)
         level = group_challenge.level
-        str_dict = strings.get_string_dict(level, dyad)
+        group = group_challenge.group
+        dyad = FamilyDyad(group)
+        caregiver = group.members.get(membership__role=ROLE_PARENT)
+        caregiver_challenge = PersonChallenge.objects\
+            .filter(group_challenge=group_challenge, person=caregiver)\
+            .get()
+        goal = caregiver_challenge.unit_goal
+        str_dict = strings.get_string_dict(level, dyad, goal=goal)
 
         self.text = self.__get_text(level.unit, is_new, str_dict)
         self.subtext = self.__get_subtext(level.unit, is_new, str_dict)

@@ -52,7 +52,7 @@ def get_text(unit, text_key, str_dict):
     return __get_text_using_regex(text, str_dict)
 
 
-def get_string_dict(level, dyad):
+def get_string_dict(level, dyad, goal=None):
     """
     Given a Level
     :param level:
@@ -65,6 +65,9 @@ def get_string_dict(level, dyad):
 
     target_strings.update(dyad_target_strings)
     target_strings.update(level_target_strings)
+
+    if goal != None :
+        target_strings[KEY_GOAL] = '{:,}'.format(goal)
 
     return target_strings
 

@@ -83,7 +83,7 @@ class Level(models.Model):
     def get_target_strings(self):
         # type: () -> object
         return {
-            strings.KEY_GOAL: str(self.goal),
+            strings.KEY_GOAL: '{:,}'.format(self.goal),
             strings.KEY_GOAL_UNIT: self.unit,
             strings.KEY_GOAL_DURATION: DURATIONS.get(self.unit_duration),
             strings.KEY_TOTAL_DURATION: DURATIONS.get(self.total_duration)
@@ -183,7 +183,6 @@ class GroupChallenge(models.Model):
         start_datetime = timezone.now()
         end_datetime = GroupChallenge.__get_end_date(start_datetime, data)
         level = Level.objects.get(id=data["level_id"])
-
         group_challenge = GroupChallenge.objects.create(
             group = group,
             duration = data["total_duration"],
@@ -228,7 +227,7 @@ class PersonChallenge(models.Model):
 
     def get_target_strings(self):
         return {
-            strings.KEY_GOAL: str(self.unit_goal),
+            strings.KEY_GOAL: '{:,}'.format(self.goal),
             strings.KEY_GOAL_UNIT: self.unit,
             strings.KEY_GOAL_DURATION: DURATIONS.get(self.unit_duration)
         }
