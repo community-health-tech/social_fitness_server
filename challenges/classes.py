@@ -20,6 +20,7 @@ class ListOfAvailableChallenges():
         level = Level.get_level_for_group(group, milestone)
         str_dict = strings.get_string_dict(level, dyad)
 
+        self.is_currently_running = False
         self.text = strings.get_text(UNIT_STEPS, strings.PICK_TEXT, str_dict)
         self.subtext = strings.get_text(UNIT_STEPS, strings.PICK_SUBTEXT, str_dict)
         self.challenges = self.make_list_of_challenges(level, milestone, str_dict)
@@ -83,6 +84,7 @@ class CurrentChallenge():
         goal = caregiver_challenge.unit_goal
         str_dict = strings.get_string_dict(level, dyad, goal=goal)
 
+        self.is_currently_running = True
         self.text = self.__get_text(level.unit, is_new, str_dict)
         self.subtext = self.__get_subtext(level.unit, is_new, str_dict)
         self.total_duration = group_challenge.duration

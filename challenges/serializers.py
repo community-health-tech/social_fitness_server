@@ -4,7 +4,7 @@ from challenges.models import PersonChallenge
 
 
 class AvailableChallengeSerializer(serializers.Serializer):
-    option = serializers.IntegerField()
+    option = serializers.IntegerField(required=False)
     goal = serializers.IntegerField()
     unit = serializers.CharField(max_length=32)
     unit_duration = serializers.CharField(max_length=32)
@@ -14,6 +14,7 @@ class AvailableChallengeSerializer(serializers.Serializer):
 
 
 class ListOfAvailableChallengestSerializer(serializers.Serializer):
+    is_currently_running = serializers.BooleanField()
     text = serializers.CharField(max_length=128)
     subtext = serializers.CharField(max_length=128)
     total_duration = serializers.CharField(max_length=16)
@@ -38,6 +39,7 @@ class PersonChallengeSerializer(serializers.ModelSerializer):
 
 
 class CurrentChallengeSerializer(serializers.Serializer):
+    is_currently_running = serializers.BooleanField()
     text = serializers.CharField(max_length=64)
     subtext = serializers.CharField(max_length=64)
     total_duration = serializers.CharField(max_length=32)
