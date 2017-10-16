@@ -16,6 +16,10 @@ class AvailableChallengeSerializer(serializers.Serializer):
 class ListOfAvailableChallengestSerializer(serializers.Serializer):
     text = serializers.CharField(max_length=128)
     subtext = serializers.CharField(max_length=128)
+    total_duration = serializers.CharField(max_length=16)
+    start_datetime = serializers.DateTimeField()
+    end_datetime = serializers.DateTimeField()
+    level_id = serializers.IntegerField()
     level_order = serializers.IntegerField()
     challenges = AvailableChallengeSerializer(many=True)
 

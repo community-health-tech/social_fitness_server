@@ -23,6 +23,9 @@ class ListOfAvailableChallenges():
         self.text = strings.get_text(UNIT_STEPS, strings.PICK_TEXT, str_dict)
         self.subtext = strings.get_text(UNIT_STEPS, strings.PICK_SUBTEXT, str_dict)
         self.challenges = self.make_list_of_challenges(level, milestone, str_dict)
+        self.total_duration = level.total_duration
+        self.start_datetime = None #timezone.now()
+        self.end_datetime = None #self.start_datetime + DATE_DELTA_7D
         self.level_id = level.pk
         self.level_order = level.order
 
@@ -41,7 +44,7 @@ class AvailableChallenge():
     def __init__(self, order, level, goal, milestone, target_strings):
         self.option = order
         self.goal = self.__get_concrete_goal(level, goal, milestone)
-        target_strings = self.__get_target_strings(target_strings)
+        target_strings = self.__get_target_strings(target_strings, self.goal)
         self.unit = level.unit
         self.unit_duration = level.unit_duration
         self.total_duration = level.total_duration
@@ -58,8 +61,8 @@ class AvailableChallenge():
         else :
             return goal
 
-    def __get_target_strings(self, target_strings):
-        target_strings[strings.KEY_GOAL] = '{:,}'.format(self.goal)
+    def __get_target_strings(self, target_strings, goal):
+        target_strings[strings.KEY_GOAL] = '{:,}'.format(goal)
         return target_strings
 
 
