@@ -23,5 +23,5 @@ urlpatterns = [
 	url(r'^fitbit/', include('fitness_connector.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('api.urls')),
-    url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    url(r'^oauth/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
