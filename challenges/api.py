@@ -2,12 +2,39 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from challenges.classes import ListOfAvailableChallenges, CurrentChallenge
+from challenges.classes import ListOfAvailableChallenges, CurrentChallenge, ChallengeViewModel
 from challenges.models import GroupChallenge
 from challenges.serializers import ListOfAvailableChallengestSerializer, AvailableChallengeSerializer, \
-    CurrentChallengeSerializer
+    CurrentChallengeSerializer, ChallengeViewModelSerializer
 from fitness.models import DATE_DELTA_7D, DATE_DELTA_1D
 from people import helpers as people_helper
+
+
+class Challenges2(APIView):
+    """
+    GET request returns the status, the available challenges, and the currently
+    running challenges. If status is AVAILABLE, then running is None. If status
+    is RUNNING, then available is None.
+    POST request creates a new challenge uniformly for all group members
+    if there are no running challenges.
+    """
+
+    def get(self, request, format=None):
+        group = people_helper.get_group(request.user.id)
+        challenge_view_model = ChallengeViewModel(group);
+        serializer = ChallengeViewModelSerializer(challenge_view_model)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        """
+        Create new challenges uniformly for all group members
+        """
+        group = people_helper.get_group(request.user.id)
+        if GroupChallenge.is_there_a_running_challenge(group) :
+            return self.__get_bad_request()
+        else:
+            return self.__post_a_new_challenge(group, request.data)
+
 
 class Challenges(APIView):
     """

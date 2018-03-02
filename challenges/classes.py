@@ -6,6 +6,39 @@ from people.family import FamilyDyad
 from people.models import ROLE_PARENT
 
 
+class ChallengeViewModel():
+    """Encapsulates data for client's ChallengeManager"""
+    STATUS_AVAILABLE = "AVAILABLE"
+    STATUS_RUNNING = "RUNNING"
+
+    def __init__(self, group):
+        self.status = ChallengeViewModel.__get_challenge_status(group)
+        self.available = ChallengeViewModel.__get_available_challenges(group, self.status)
+        self.running = ChallengeViewModel.__get_running_challenges(group, self.status)
+
+    @staticmethod
+    def __get_challenge_status(group):
+        if GroupChallenge.is_there_a_running_challenge(group) :
+            return ChallengeViewModel.STATUS_RUNNING
+        else:
+            return ChallengeViewModel.STATUS_AVAILABLE
+
+    @staticmethod
+    def __get_available_challenges(self, group, status):
+        if status == ChallengeViewModel.STATUS_AVAILABLE:
+            return ListOfAvailableChallenges(group)
+        else:
+            return None
+
+    @staticmethod
+    def __get_running_challenges(self, group, status):
+        if status == ChallengeViewModel.STATUS_RUNNING:
+            challenge = GroupChallenge.objects.filter(group=group).latest()
+            return CurrentChallenge(challenge)
+        else:
+            return None
+
+
 class ListOfAvailableChallenges():
     """Encapsulates all available challenges for a particular group"""
 

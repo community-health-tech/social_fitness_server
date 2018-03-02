@@ -48,3 +48,9 @@ class CurrentChallengeSerializer(serializers.Serializer):
     level_id = serializers.IntegerField()
     level_order = serializers.IntegerField()
     progress = PersonChallengeSerializer(many=True)
+
+
+class ChallengeViewModelSerializer(serializers.Serializer):
+    status = serializers.BooleanField()
+    available = ListOfAvailableChallengestSerializer()
+    running = CurrentChallengeSerializer()
