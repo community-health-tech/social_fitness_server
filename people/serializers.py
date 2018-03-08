@@ -27,8 +27,11 @@ class MembershipSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'role', 'account')
 
     def get_account(self, obj):
-        account = Account.objects.get(person__id=obj.id)
-        serialized = AccountSerializer(account)
+        if Account.objects.get(person__id=obj.id).exists():
+            account = Account.objects.get(person__id=obj.id)
+            serialized = AccountSerializer(account)
+        else:
+            serialized = serializers.NullBooleanField(None)
         return serialized.data
 
 
