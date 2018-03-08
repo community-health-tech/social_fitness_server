@@ -30,7 +30,7 @@ class MembershipSerializer(serializers.ModelSerializer):
         try:
             account = Account.objects.get(person__id=obj.id)
             serialized = AccountSerializer(account)
-        except Account.DoesNotExists:
+        except Account.DoesNotExist:
             serialized = serializers.NullBooleanField(None)
         
         return serialized.data
