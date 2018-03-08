@@ -20,20 +20,11 @@ class PersonSerializer(serializers.ModelSerializer):
 class MembershipSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source="person.id")
     name = serializers.ReadOnlyField(source="person.name")
-    account = serializers.SerializerMethodField()
+    #account = serializers.SerializerMethodField()
 
     class Meta:
         model = Membership
         fields = ('id', 'name', 'role', 'account')
-
-    def get_account(self, obj):
-        #try:
-        #    account = Account.objects.get(person__id=obj.id)
-        #    serialized = AccountSerializer(account)
-        #except Account.DoesNotExist:
-        serialized = serializers.NullBooleanField(None)
-        
-        return serialized.data
 
 
 class GroupListSerializer(serializers.ModelSerializer):
