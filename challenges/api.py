@@ -35,6 +35,20 @@ class Challenges2(APIView):
         else:
             return self.__post_a_new_challenge(group, request.data)
 
+    def __post_a_new_challenge(self, group, data):
+        validator = AvailableChallengeSerializer(data=data)
+        if validator.is_valid():
+            validated_data = validator.validated_data
+            challenge = GroupChallenge.create_from_data(group, validated_data)
+            challenge_view_model = ChallengeViewModel(group);
+            serializer = ChallengeViewModelSerializer(challenge_view_model)
+            #current_challenge = CurrentChallenge(challenge, is_new=True)
+            #serializer = CurrentChallengeSerializer(current_challenge)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            errors = validator.errors
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class Challenges(APIView):
     """

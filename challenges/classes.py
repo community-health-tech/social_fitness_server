@@ -24,14 +24,14 @@ class ChallengeViewModel():
             return ChallengeViewModel.STATUS_AVAILABLE
 
     @staticmethod
-    def __get_available_challenges(self, group, status):
+    def __get_available_challenges(group, status):
         if status == ChallengeViewModel.STATUS_AVAILABLE:
             return ListOfAvailableChallenges(group)
         else:
             return None
 
     @staticmethod
-    def __get_running_challenges(self, group, status):
+    def __get_running_challenges(group, status):
         if status == ChallengeViewModel.STATUS_RUNNING:
             challenge = GroupChallenge.objects.filter(group=group).latest()
             return CurrentChallenge(challenge)

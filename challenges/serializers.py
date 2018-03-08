@@ -51,6 +51,6 @@ class CurrentChallengeSerializer(serializers.Serializer):
 
 
 class ChallengeViewModelSerializer(serializers.Serializer):
-    status = serializers.BooleanField()
+    status = serializers.CharField(max_length=32)
     available = ListOfAvailableChallengestSerializer()
     running = CurrentChallengeSerializer()
