@@ -49,6 +49,10 @@ class Challenges2(APIView):
             errors = validator.errors
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def __get_bad_request(self):
+        output = {"message": "There is a running challenge"}
+        return Response(output, status.HTTP_400_BAD_REQUEST)
+
 
 class Challenges(APIView):
     """
