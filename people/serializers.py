@@ -10,11 +10,18 @@ class AccountSerializer(serializers.ModelSerializer):
 
 
 class PersonSerializer(serializers.ModelSerializer):
-    account = AccountSerializer(read_only=True)
+    #account = AccountSerializer(read_only=True)
+    account = serializers.SerializerMethodField()
 
     class Meta:
         model = Person
         fields = ('id', 'name', 'account')
+
+    def get_account(self, obj):
+        account = Account.objects.get(person__id=obj.id)
+        serialized = AccountSerializer(account)
+
+        return serialized.data
 
 
 class MembershipSerializer(serializers.ModelSerializer):
