@@ -18,10 +18,13 @@ class PersonSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'account')
 
     def get_account(self, obj):
-        account = Account.objects.get(person__id=obj.id)
-        serialized = AccountSerializer(account)
+        account = Account.objects.filter(person__id=obj.id)
 
-        return serialized.data
+        if (account.exists()):
+            serialized = AccountSerializer(account.first())
+            return serialized.data
+        else:
+            return None;
 
 
 class MembershipSerializer(serializers.ModelSerializer):
@@ -34,10 +37,13 @@ class MembershipSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'role', 'account')
 
     def get_account(self, obj):
-        account = Account.objects.get(person__id=obj.id)
-        serialized = AccountSerializer(account)
+        account = Account.objects.filter(person__id=obj.id)
 
-        return serialized.data
+        if (account.exists()):
+            serialized = AccountSerializer(account.first())
+            return serialized.data
+        else:
+            return None;
 
 
 class CircleMembershipSerializer(serializers.ModelSerializer):
@@ -69,3 +75,4 @@ class CircleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Circle
         fields = ('id', 'name', 'members', )
+        
