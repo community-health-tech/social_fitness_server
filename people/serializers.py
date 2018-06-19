@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from people.models import Person, Group, Membership
+from people.models import Person, Group, Membership, Circle, CircleMembership
 from fitness_connector.models import Account
 
 
@@ -40,6 +40,15 @@ class MembershipSerializer(serializers.ModelSerializer):
         return serialized.data
 
 
+class CircleMembershipSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source="person.id")
+    name = serializers.ReadOnlyField(source="person.name")
+
+    class Meta:
+        model = CircleMembership
+        fields = ('id', 'name')
+
+
 class GroupListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
@@ -51,4 +60,12 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
+        fields = ('id', 'name', 'members', )
+
+
+class CircleSerializer(serializers.ModelSerializer):
+    members = CircleMembershipSerializer(source="circlemembership_set", many=True)
+
+    class Meta:
+        model = Circle
         fields = ('id', 'name', 'members', )

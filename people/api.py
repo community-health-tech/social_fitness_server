@@ -3,9 +3,9 @@ from rest_framework import permissions, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from people.models import Person, Group
+from people.models import Person, Group, Circle
 from people.serializers import PersonSerializer, GroupSerializer, \
-    GroupListSerializer
+    GroupListSerializer, CircleSerializer
 from fitness_connector.activity import PersonActivity
 
 
@@ -51,6 +51,33 @@ class UserGroupInfo(APIView):
         person = self.get_person(request.user.id)
         group = self.get_group(person)
         serializer = GroupSerializer(group)
+
+        return Response(serializer.data)
+
+
+class UserCircleInfo(APIView):
+    """
+    Retrieve a Circle's detailed information in which the logged User
+    belongs to
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_person(self, user_id):
+        try:
+            return Person.objects.get(user__id=user_id)
+        except Person.DoesNotExist:
+            raise Http404
+
+    def get_circle(self, person, circle_id):
+        try:
+            return Circle.objects.get(members=person, id=circle_id)
+        except Circle.DoesNotExist:
+            raise Http404
+
+    def get(self, request, circle_id, format=None):
+        person = self.get_person(request.user.id)
+        circle = self.get_circle(person, circle_id)
+        serializer = CircleSerializer(circle)
 
         return Response(serializer.data)
 
@@ -117,5 +144,3 @@ class GroupInfo(APIView):
         serializer = GroupSerializer(group)
 
         return Response(serializer.data)
-
-

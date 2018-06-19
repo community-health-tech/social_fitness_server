@@ -1,7 +1,7 @@
 from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from fitness.api import UserGroupActivities
-from people.api import UserInfo, UserGroupInfo
+from people.api import UserInfo, UserGroupInfo, UserCircleInfo
 from story_manager.api import UserStory, UserStoryList
 from challenges.api import Challenges, Available, Create, Current, Challenges2
 
@@ -16,6 +16,9 @@ urlpatterns = [
 
     # Logged Family's details
     url(r'^group/info/', UserGroupInfo.as_view()),
+
+    # Logged Family's circle
+    url(r'^circle/(?P<circle_id>[0-9]+)/$', UserCircleInfo.as_view()),
 
     # Logged Family's Activities in 7 days
     url(r'^group/activities/7d/'

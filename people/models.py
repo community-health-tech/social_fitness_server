@@ -36,6 +36,14 @@ class Group(models.Model):
         raise Exception("No Person of that role")
 
 
+class Circle(models.Model):
+    name = models.CharField(max_length=200)
+    members = models.ManyToManyField(Person, through='CircleMembership')
+
+    def __str__(self):
+        return self.name
+
+
 class Pronoun(models.Model):
     MEMBERSHIP_STRING = "{0}, {1}, {2}"
 
@@ -62,3 +70,14 @@ class Membership(models.Model):
     def __str__(self):
         return Membership.MEMBERSHIP_STRING.format(self.person.name, 
             self.get_role_display(), self.group.name)
+
+
+class CircleMembership(models.Model):
+    MEMBERSHIP_STRING = "{0} of {1}"
+
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    circle = models.ForeignKey(Circle, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return CircleMembership.MEMBERSHIP_STRING.format(self.person.name,
+                                                         self.circle.name)
