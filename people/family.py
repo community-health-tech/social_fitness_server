@@ -1,5 +1,5 @@
 # Constants
-from people.models import Person, ROLE_PARENT, ROLE_CHILD
+from people.models import Person, Membership, ROLE_PARENT, ROLE_CHILD
 
 KEY_PERSON1_NAME = "%PERSON1_NAME%"
 KEY_PERSON1_PERSONAL = "%PERSON1_PERSONAL%"
@@ -44,6 +44,16 @@ class FamilyDyad():
             self.target_strings = self.__compute_target_strings()
         return self.target_strings
 
+    @staticmethod
+    def is_family(group):
+        has_parent = False
+        has_child = False
+        for membership in Membership.objects.filter(group=group):
+            if membership.role == ROLE_PARENT:
+                has_parent = True
+            if membership.role == ROLE_CHILD:
+                has_child = True
+        return has_parent and has_child
 
     # PRIVATE CLASS METHODS
     def __compute_target_strings(self):

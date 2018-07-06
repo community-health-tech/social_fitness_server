@@ -46,22 +46,39 @@ class ListOfAvailableChallenges():
         __TEMP_DATE = "2017-06-01"
         __TEMP_LEVEL_GROUP = LevelGroup.objects.get(pk=1)
 
-        dyad = FamilyDyad(group)
-        caregiver = group.members.get(membership__role=ROLE_PARENT)
-        milestone = PersonFitnessMilestone.create_from_7d_average(
-            caregiver, ROLE_PARENT, __TEMP_DATE, __TEMP_LEVEL_GROUP)
-        level = Level.get_level_for_group(group, milestone)
-        str_dict = strings.get_string_dict(level, dyad)
+        if FamilyDyad.is_family(group):
+            dyad = FamilyDyad(group)
+            caregiver = group.members.get(membership__role=ROLE_PARENT)
+            milestone = PersonFitnessMilestone.create_from_7d_average(
+                caregiver, ROLE_PARENT, __TEMP_DATE, __TEMP_LEVEL_GROUP)
+            level = Level.get_level_for_group(group, milestone)
+            str_dict = strings.get_string_dict(level, dyad)
 
-        self.is_currently_running = False
-        self.text = strings.get_text(UNIT_STEPS, strings.PICK_TEXT, str_dict)
-        self.subtext = strings.get_text(UNIT_STEPS, strings.PICK_SUBTEXT, str_dict)
-        self.challenges = self.make_list_of_challenges(level, milestone, str_dict)
-        self.total_duration = level.total_duration
-        self.start_datetime = None #timezone.now()
-        self.end_datetime = None #self.start_datetime + DATE_DELTA_7D
-        self.level_id = level.pk
-        self.level_order = level.order
+            self.is_currently_running = False
+            self.text = strings.get_text(UNIT_STEPS, strings.PICK_TEXT, str_dict)
+            self.subtext = strings.get_text(UNIT_STEPS, strings.PICK_SUBTEXT, str_dict)
+            self.challenges = self.make_list_of_challenges(level, milestone, str_dict)
+            self.total_duration = level.total_duration
+            self.start_datetime = None #timezone.now()
+            self.end_datetime = None #self.start_datetime + DATE_DELTA_7D
+            self.level_id = level.pk
+            self.level_order = level.order
+        else: ## TODO: make this better, this is a hack by HS
+            person = group.members.get()
+            milestone = PersonFitnessMilestone.create_from_7d_average(
+                person, ROLE_PARENT, __TEMP_DATE, __TEMP_LEVEL_GROUP) # TODO role is not needed
+            level = Level.get_level_for_group(group, milestone)
+            str_dict = {}
+            self.is_currently_running = False
+            self.text = strings.get_text(UNIT_STEPS, strings.PICK_TEXT, str_dict)
+            self.subtext = strings.get_text(UNIT_STEPS, strings.PICK_SUBTEXT, str_dict)
+            self.challenges = self.make_list_of_challenges(level, milestone, str_dict)
+            self.total_duration = level.total_duration
+            self.start_datetime = None #timezone.now()
+            self.end_datetime = None #self.start_datetime + DATE_DELTA_7D
+            self.level_id = level.pk
+            self.level_order = level.order
+
 
     def make_list_of_challenges(self, level, milestone, target_strings):
         challenges = [
