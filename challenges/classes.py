@@ -71,7 +71,7 @@ class ListOfAvailableChallenges():
         self.level_order = level.order
 
     @staticmethod
-    def make_list_of_challenges(self, level, milestone, target_strings):
+    def make_list_of_challenges(level, milestone, target_strings):
         challenges = [
             AvailableChallenge(1, level, level.subgoal_1, milestone, target_strings),
             AvailableChallenge(2, level, level.subgoal_2, milestone, target_strings),
