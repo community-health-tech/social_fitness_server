@@ -49,16 +49,14 @@ class ListOfAvailableChallenges():
         __TEMP_DATE = "2017-06-01"
         __TEMP_LEVEL_GROUP = LevelGroup.objects.get(pk=1)
 
-        logger.debug('Is family group: ' + FamilyDyad.is_family(group))
-
         if FamilyDyad.is_family(group):
             characterized_group = FamilyDyad(group)
-            person = group.members.get(membership__role=ROLE_PARENT)
+            reference_person = group.members.get(membership__role=ROLE_PARENT)
         else:
             characterized_group = OnePersonGroup(group)
-            person = group.members.get()
+            reference_person = group.members.get()
 
-        milestone = PersonFitnessMilestone.create_from_7d_average(person, __TEMP_DATE, __TEMP_LEVEL_GROUP)
+        milestone = PersonFitnessMilestone.create_from_7d_average(reference_person, __TEMP_DATE, __TEMP_LEVEL_GROUP)
         level = Level.get_level_for_group(group, milestone)
         str_dict = strings.get_string_dict(level, characterized_group)
 
