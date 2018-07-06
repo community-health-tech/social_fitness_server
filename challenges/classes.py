@@ -1,10 +1,13 @@
+import logging
+
 from challenges import strings
 from challenges.models import LevelGroup, PersonFitnessMilestone, Level, \
     GroupChallenge, PersonChallenge
 from challenges.models import UNIT_STEPS
-from people.family import FamilyDyad
+from people.characterized import OnePersonGroup, FamilyDyad
 from people.models import ROLE_PARENT
 
+logger = logging.getLogger(__name__)
 
 class ChallengeViewModel():
     """Encapsulates data for client's ChallengeManager"""
@@ -46,40 +49,30 @@ class ListOfAvailableChallenges():
         __TEMP_DATE = "2017-06-01"
         __TEMP_LEVEL_GROUP = LevelGroup.objects.get(pk=1)
 
+        logger.debug('Is family group: ' + FamilyDyad.is_family(group))
+
         if FamilyDyad.is_family(group):
-            dyad = FamilyDyad(group)
-            caregiver = group.members.get(membership__role=ROLE_PARENT)
-            milestone = PersonFitnessMilestone.create_from_7d_average(
-                caregiver, ROLE_PARENT, __TEMP_DATE, __TEMP_LEVEL_GROUP)
-            level = Level.get_level_for_group(group, milestone)
-            str_dict = strings.get_string_dict(level, dyad)
-
-            self.is_currently_running = False
-            self.text = strings.get_text(UNIT_STEPS, strings.PICK_TEXT, str_dict)
-            self.subtext = strings.get_text(UNIT_STEPS, strings.PICK_SUBTEXT, str_dict)
-            self.challenges = self.make_list_of_challenges(level, milestone, str_dict)
-            self.total_duration = level.total_duration
-            self.start_datetime = None #timezone.now()
-            self.end_datetime = None #self.start_datetime + DATE_DELTA_7D
-            self.level_id = level.pk
-            self.level_order = level.order
-        else: ## TODO: make this better, this is a hack by HS
+            characterized_group = FamilyDyad(group)
+            person = group.members.get(membership__role=ROLE_PARENT)
+        else:
+            characterized_group = OnePersonGroup(group)
             person = group.members.get()
-            milestone = PersonFitnessMilestone.create_from_7d_average(
-                person, ROLE_PARENT, __TEMP_DATE, __TEMP_LEVEL_GROUP) # TODO role is not needed
-            level = Level.get_level_for_group(group, milestone)
-            str_dict = {}
-            self.is_currently_running = False
-            self.text = strings.get_text(UNIT_STEPS, strings.PICK_TEXT, str_dict)
-            self.subtext = strings.get_text(UNIT_STEPS, strings.PICK_SUBTEXT, str_dict)
-            self.challenges = self.make_list_of_challenges(level, milestone, str_dict)
-            self.total_duration = level.total_duration
-            self.start_datetime = None #timezone.now()
-            self.end_datetime = None #self.start_datetime + DATE_DELTA_7D
-            self.level_id = level.pk
-            self.level_order = level.order
 
+        milestone = PersonFitnessMilestone.create_from_7d_average(person, __TEMP_DATE, __TEMP_LEVEL_GROUP)
+        level = Level.get_level_for_group(group, milestone)
+        str_dict = strings.get_string_dict(level, characterized_group)
 
+        self.is_currently_running = False
+        self.text = strings.get_text(UNIT_STEPS, strings.PICK_TEXT, str_dict)
+        self.subtext = strings.get_text(UNIT_STEPS, strings.PICK_SUBTEXT, str_dict)
+        self.challenges = ListOfAvailableChallenges.make_list_of_challenges(level, milestone, str_dict)
+        self.total_duration = level.total_duration
+        self.start_datetime = None #timezone.now() TODO
+        self.end_datetime = None #self.start_datetime + DATE_DELTA_7D
+        self.level_id = level.pk
+        self.level_order = level.order
+
+    @staticmethod
     def make_list_of_challenges(self, level, milestone, target_strings):
         challenges = [
             AvailableChallenge(1, level, level.subgoal_1, milestone, target_strings),

@@ -1,4 +1,5 @@
 # Constants
+from people.abstracts import AbstractCharacterizedGroup
 from people.models import Person, Membership, ROLE_PARENT, ROLE_CHILD
 
 KEY_PERSON1_NAME = "%PERSON1_NAME%"
@@ -13,8 +14,33 @@ KEY_CHILD_PRONOUN = "%CHILD_NAME%"
 KEY_CAREGIVER_NAME = "%CAREGIVER_NAME%"
 KEY_CAREGIVER_PRONOUN = "%CAREGIVER_PRONOUN%"
 
+
 # Classes
-class FamilyDyad():
+class OnePersonGroup(AbstractCharacterizedGroup):
+
+    def __init__(self, group):
+        self.person = Person.objects.get(group=group)
+        self.membership = self.person.membership_set.get(group=group)
+        self.target_strings = None
+
+    def get_members(self):
+        return [self.person]
+
+    def get_target_strings(self):
+        if self.target_strings is None:
+            self.target_strings = self.__compute_target_strings()
+        return self.target_strings
+
+    # PRIVATE CLASS METHODS
+    def __compute_target_strings(self):
+        return {
+            KEY_PERSON1_NAME: self.person.name,
+            KEY_PERSON1_PERSONAL: self.membership.pronoun.personal,
+            KEY_PERSON1_PRONOUN: self.membership.pronoun.pronoun
+        }
+
+
+class FamilyDyad(AbstractCharacterizedGroup):
 
     def __init__(self, group):
         self.group = group
@@ -38,9 +64,11 @@ class FamilyDyad():
     def get_child_name(self):
         return self.child.name
 
+    def get_members(self):
+        return self.group.members
 
     def get_target_strings(self):
-        if self.target_strings == None:
+        if self.target_strings is None:
             self.target_strings = self.__compute_target_strings()
         return self.target_strings
 

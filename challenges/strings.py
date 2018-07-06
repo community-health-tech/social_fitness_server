@@ -52,21 +52,21 @@ def get_text(unit, text_key, str_dict):
     return __get_text_using_regex(text, str_dict)
 
 
-def get_string_dict(level, dyad, goal=None):
+def get_string_dict(level, characterized_group, goal=None):
     """
     Given a Level
     :param level:
-    :param dyad:
+    :param characterized_group:
     :return:
     """
     target_strings = {}
-    dyad_target_strings = dyad.get_target_strings()
+    dyad_target_strings = characterized_group.get_target_strings()
     level_target_strings = level.get_target_strings()
 
     target_strings.update(dyad_target_strings)
     target_strings.update(level_target_strings)
 
-    if goal != None :
+    if goal is not None:
         target_strings[KEY_GOAL] = '{:,}'.format(goal)
 
     return target_strings

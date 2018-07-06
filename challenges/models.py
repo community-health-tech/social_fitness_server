@@ -302,7 +302,7 @@ class PersonFitnessMilestone(models.Model):
         return PersonFitnessMilestone.objects.latest()
 
     @staticmethod
-    def create_from_7d_average(person, role, start_date_string, level_group):
+    def create_from_7d_average(person, start_date_string, level_group):
         #start_date = parser.parse(start_date_string)
         start_date = dateparse.parse_date(start_date_string)
         print(start_date)
