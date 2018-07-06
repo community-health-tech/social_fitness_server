@@ -13,7 +13,10 @@ UNIT_MINUTES = "minutes"
 UNIT_MINUTES_MODERATE = "minutes_moderate"
 UNIT_MINUTES_VIGOROUS = "minutes_vigorous"
 UNIT_DISTANCE = "distance"
-
+DEFAULT_STEPS = 1000;
+DEFAULT_CALS = 1500;
+DEFAULT_ACTIVE_MINUTES = 10;
+DEFAULT_DIST = 2;
 
 # Django "Enums"
 Unit = (
@@ -70,7 +73,7 @@ class Level(models.Model):
 
     def __str__(self):
         percent = ""
-        if self.goal_is_percent :  percent = "%"
+        if self.goal_is_percent:  percent = "%"
         return Level.MEMBERSHIP_STRING.format(
             self.order,
             self.goal,
@@ -141,8 +144,8 @@ class GroupChallenge(models.Model):
         Invariant: All group members has the same goal, unit, and durations
         """
         person = Person.objects.get(group=self.group)
-        person_challenge = PersonChallenge.objects\
-            .filter(person=person, group_challenge=self)\
+        person_challenge = PersonChallenge.objects \
+            .filter(person=person, group_challenge=self) \
             .latest(field_name="end_datatime")
         target_strings = {strings.KEY_GOAL_DURATION: self.duration}
         additional_target_strings = person_challenge.get_target_strings()
@@ -157,7 +160,7 @@ class GroupChallenge(models.Model):
         member_challenges = []
         group = self.group
         members = group.members.all()
-        for person in members :
+        for person in members:
             member_challenges.append(PersonChallenge.create_from_data(person, self, data))
         return member_challenges
 
@@ -167,7 +170,7 @@ class GroupChallenge(models.Model):
         :param this_group: Group which to be checked
         :return: True if there is GroupChallenge that ended in the future
         """
-        running_challenges = GroupChallenge.objects\
+        running_challenges = GroupChallenge.objects \
             .filter(group=this_group,
                     end_datetime__gte=timezone.now(),
                     completed_datetime__isnull=True)
@@ -184,10 +187,10 @@ class GroupChallenge(models.Model):
         end_datetime = GroupChallenge.__get_end_date(start_datetime, data)
         level = Level.objects.get(id=data["level_id"])
         group_challenge = GroupChallenge.objects.create(
-            group = group,
-            duration = data["total_duration"],
-            start_datetime = start_datetime,
-            end_datetime = end_datetime,
+            group=group,
+            duration=data["total_duration"],
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
             level=level
         )
         group_challenge.save()
@@ -197,9 +200,9 @@ class GroupChallenge(models.Model):
     @staticmethod
     def __get_end_date(start_datetime, data):
         total_duration = data['total_duration']
-        if total_duration == "1d" :
+        if total_duration == "1d":
             return start_datetime + DATE_DELTA_1D
-        elif total_duration == "7d" :
+        elif total_duration == "7d":
             return start_datetime + DATE_DELTA_7D
 
 
@@ -210,7 +213,7 @@ class PersonChallenge(models.Model):
     group_challenge = models.ForeignKey(GroupChallenge, blank=False)
     level = models.ForeignKey(Level, blank=False)
 
-    unit =  models.CharField(max_length=32, choices=Unit, blank=False)
+    unit = models.CharField(max_length=32, choices=Unit, blank=False)
     unit_goal = models.IntegerField(blank=False)
     unit_duration = models.CharField(max_length=16, choices=Duration, blank=False)
 
@@ -241,12 +244,12 @@ class PersonChallenge(models.Model):
         :return: PersonChallenge that from the input parameters
         """
         person_challenge = PersonChallenge.objects.create(
-            person = person,
-            group_challenge =  group_challenge,
-            level = group_challenge.level,
-            unit = data["unit"],
-            unit_goal = data["goal"],
-            unit_duration = data["unit_duration"]
+            person=person,
+            group_challenge=group_challenge,
+            level=group_challenge.level,
+            unit=data["unit"],
+            unit_goal=data["goal"],
+            unit_duration=data["unit_duration"]
         )
         person_challenge.save()
         return person_challenge
@@ -282,9 +285,9 @@ class PersonFitnessMilestone(models.Model):
         :param unit: Unit of interest
         :return: Float or Integer value of the Unit of Interest
         """
-        if unit == UNIT_STEPS :
+        if unit == UNIT_STEPS:
             return self.steps
-        elif unit == UNIT_MINUTES :
+        elif unit == UNIT_MINUTES:
             return self.active_minutes
         elif unit == UNIT_MINUTES_MODERATE:
             return self.active_minutes_moderate
@@ -303,38 +306,39 @@ class PersonFitnessMilestone(models.Model):
 
     @staticmethod
     def create_from_7d_average(person, start_date_string, level_group):
-        #start_date = parser.parse(start_date_string)
+        # start_date = parser.parse(start_date_string)
         start_date = dateparse.parse_date(start_date_string)
         print(start_date)
         end_date = start_date + DATE_DELTA_7D
-        parent_activities = ActivityByDay.objects\
+        parent_activities = ActivityByDay.objects \
             .filter(
-            person = person,
-            date__gte = start_date,
-            date__lt = end_date)\
+            person=person,
+            date__gte=start_date,
+            date__lt=end_date) \
             .aggregate(
-            steps = Avg("steps"),
-            calories = Avg("calories"),
-            active_minutes = Avg("active_minutes"),
-            distance = Avg("distance")
+            steps=Avg("steps"),
+            calories=Avg("calories"),
+            active_minutes=Avg("active_minutes"),
+            distance=Avg("distance")
         )
+
+        steps = parent_activities["steps"] if parent_activities["steps"] is not None else DEFAULT_STEPS
+        cals = parent_activities["calories"] if parent_activities["steps"] is not None else DEFAULT_CALS
+        mins = parent_activities["active_minutes"] if parent_activities["steps"] is not None else DEFAULT_ACTIVE_MINUTES
+        dist = parent_activities["distance"] if parent_activities["steps"] is not None else DEFAULT_DIST
 
         milestone = PersonFitnessMilestone.objects.create(
             person=person,
             start_datetime=start_date,
             end_datetime=end_date,
-            steps=parent_activities["steps"],
-            calories=parent_activities["calories"],
-            active_minutes=parent_activities["active_minutes"],
+            steps=steps,
+            calories=cals,
+            active_minutes=mins,
             active_minutes_moderate=0,
             active_minutes_vigorous=0,
-            distance=parent_activities["distance"],
+            distance=dist,
             level_group=level_group
         )
         milestone.save()
 
         return milestone
-
-
-
-
