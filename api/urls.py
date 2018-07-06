@@ -32,7 +32,7 @@ urlpatterns = [
     url(r'^group/stories/(?P<story_id>[0-9]+)/$', UserStory.as_view()),
 
     # Logged Family's: Challenges
-    url(r'^group/challenges2$', Challenges.as_view()),
+    url(r'^group/challenges$', Challenges.as_view()),
 
     # Logged Family's: Challenges
     url(r'^group/challenges2$', Challenges.as_view()),
