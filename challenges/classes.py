@@ -47,6 +47,7 @@ class ListOfAvailableChallenges():
         __TEMP_LEVEL_GROUP = LevelGroup.objects.get(pk=1)
 
         if FamilyDyad.is_family(group):
+            """
             dyad = FamilyDyad(group)
             caregiver = group.members.get(membership__role=ROLE_PARENT)
             milestone = PersonFitnessMilestone.create_from_7d_average(
@@ -62,7 +63,8 @@ class ListOfAvailableChallenges():
             self.start_datetime = None #timezone.now()
             self.end_datetime = None #self.start_datetime + DATE_DELTA_7D
             self.level_id = level.pk
-            self.level_order = level.order
+            self.level_order = level.order"""
+            pass
         else: ## TODO: make this better, this is a hack by HS
             person = group.members.get()
             milestone = PersonFitnessMilestone.create_from_7d_average(
