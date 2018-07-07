@@ -117,13 +117,21 @@ class CurrentChallenge():
         """
         level = group_challenge.level
         group = group_challenge.group
-        dyad = FamilyDyad(group)
-        caregiver = group.members.get(membership__role=ROLE_PARENT)
-        caregiver_challenge = PersonChallenge.objects\
-            .filter(group_challenge=group_challenge, person=caregiver)\
+
+        if FamilyDyad.is_family(group):
+            characterized_group = FamilyDyad(group)
+            reference_person = group.members.get(membership__role=ROLE_PARENT)
+        else:
+            characterized_group = OnePersonGroup(group)
+            reference_person = group.members.get()
+
+        # dyad = FamilyDyad(group)
+        # caregiver = group.members.get(membership__role=ROLE_PARENT)
+        reference_person_challenge = PersonChallenge.objects\
+            .filter(group_challenge=group_challenge, person=reference_person)\
             .get()
-        goal = caregiver_challenge.unit_goal
-        str_dict = strings.get_string_dict(level, dyad, goal=goal)
+        goal = reference_person_challenge.unit_goal
+        str_dict = strings.get_string_dict(level, characterized_group, goal=goal)
 
         self.is_currently_running = True
         self.text = self.__get_text(level.unit, is_new, str_dict)

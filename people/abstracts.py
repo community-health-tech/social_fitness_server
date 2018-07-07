@@ -1,6 +1,6 @@
 class AbstractCharacterizedGroup():
     def get_members(self):
-        pass
+        raise NotImplementedError()
 
     def get_target_strings(self):
-        pass
+        raise NotImplementedError()

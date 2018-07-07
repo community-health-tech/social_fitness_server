@@ -319,24 +319,23 @@ class PersonFitnessMilestone(models.Model):
             steps=Avg("steps"),
             calories=Avg("calories"),
             active_minutes=Avg("active_minutes"),
-            distance=Avg("distance")
-        )
+            distance=Avg("distance"))
 
-        steps = parent_activities["steps"] if parent_activities["steps"] is not None else DEFAULT_STEPS
-        cals = parent_activities["calories"] if parent_activities["steps"] is not None else DEFAULT_CALS
-        mins = parent_activities["active_minutes"] if parent_activities["steps"] is not None else DEFAULT_ACTIVE_MINUTES
-        dist = parent_activities["distance"] if parent_activities["steps"] is not None else DEFAULT_DIST
+        steps = parent_activities["steps"]
+        cals = parent_activities["calories"]
+        mins = parent_activities["active_minutes"]
+        dist = parent_activities["distance"]
 
         milestone = PersonFitnessMilestone.objects.create(
             person=person,
             start_datetime=start_date,
             end_datetime=end_date,
-            steps=steps,
-            calories=cals,
-            active_minutes=mins,
+            steps=steps if steps is not None else DEFAULT_STEPS,
+            calories=cals if cals is not None else DEFAULT_CALS,
+            active_minutes=mins if mins is not None else DEFAULT_ACTIVE_MINUTES,
             active_minutes_moderate=0,
             active_minutes_vigorous=0,
-            distance=dist,
+            distance=dist if dist is not None else DEFAULT_DIST,
             level_group=level_group
         )
         milestone.save()
