@@ -1,4 +1,5 @@
 class AbstractCharacterizedGroup():
+
     def get_members(self):
         raise NotImplementedError()
 

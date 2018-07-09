@@ -39,13 +39,28 @@ STRINGS_EN_US = {
     }
 }
 
-# FUNCTIONS
+""" FUNCTIONS """
+
+
+def get_text(unit, text_dict, text_key, keyword_dict):
+    """
+    Get the text key String based on a unit of challenge
+    :param unit: unit of the challenge as defined in models.Unit
+    :param text_dict: # TODO
+    :param text_key: String of the type of text that is needed
+    :param keyword_dict: Dict of keywords
+    :return: String with the key string replaces with target string
+    """
+    text = str(text_dict[unit][text_key])
+    return __get_text_using_regex(text, keyword_dict)
+
+
 def get_text(unit, text_key, str_dict):
     """
     Get the text key String based on a unit of challenge
     :param unit: unit of the challenge as defined in models.Unit
-    :param textKey: String of the type of text that is needed
-    :param targetStrings: Dict of key and target texts
+    :param text_key: String of the type of text that is needed
+    :param str_dict: Dict of key and target texts
     :return: String with the key string replaces with target string
     """
     text = str(STRINGS_EN_US[unit][text_key])

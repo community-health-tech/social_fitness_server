@@ -319,8 +319,8 @@ class PersonFitnessMilestone(models.Model):
             steps=Avg("steps"),
             calories=Avg("calories"),
             active_minutes=Avg("active_minutes"),
-            distance=Avg("distance"))
-
+            distance=Avg("distance")
+        )
         steps = parent_activities["steps"]
         cals = parent_activities["calories"]
         mins = parent_activities["active_minutes"]
