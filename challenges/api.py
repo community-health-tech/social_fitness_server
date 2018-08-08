@@ -42,8 +42,8 @@ class Challenges(APIView):
             challenge = GroupChallenge.create_from_data(group, validated_data)
             challenge_view_model = ChallengeViewModel(group);
             serializer = ChallengeViewModelSerializer(challenge_view_model)
-            #current_challenge = CurrentChallenge(challenge, is_new=True)
-            #serializer = CurrentChallengeSerializer(current_challenge)
+            # current_challenge = CurrentChallenge(challenge, is_new=True)
+            # serializer = CurrentChallengeSerializer(current_challenge)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             errors = validator.errors
@@ -117,6 +117,32 @@ class Current(APIView):
         current_challenge = CurrentChallenge(challenge)
         serializer = CurrentChallengeSerializer(current_challenge)
         return Response(serializer.data)
+
+
+class ChallengeCompletion(APIView):
+    """
+    GET request to set the currently running challenge as completed if there is ONE running challenge.
+    Return HTTP 200 if successful. Otherwise return HTTP 400.
+    """
+
+    def get(self, request, format=None):
+        group = people_helper.get_group(request.user.id)
+        if GroupChallenge.is_there_a_running_challenge(group):
+            group_challenge = GroupChallenge.get_running_challenge(group)
+            group_challenge.set_as_completed()
+            return ChallengeCompletion.__get_request_completed()
+        else:
+            return ChallengeCompletion.__get_bad_request()
+
+    @staticmethod
+    def __get_request_completed():
+        output = {"message": "Challenge has been set as completed."}
+        return Response(output, status.HTTP_200_OK)
+
+    @staticmethod
+    def __get_bad_request():
+        output = {"message": "There is no running challenge."}
+        return Response(output, status.HTTP_400_BAD_REQUEST)
 
 
 class ChallengesOld(APIView):

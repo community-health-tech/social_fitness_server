@@ -164,6 +164,9 @@ class GroupChallenge(models.Model):
             member_challenges.append(PersonChallenge.create_from_data(person, self, data))
         return member_challenges
 
+    def set_as_completed(self):
+        self.completed_datetime = timezone.now
+
     @staticmethod
     def is_there_a_running_challenge(this_group):
         """
@@ -174,7 +177,20 @@ class GroupChallenge(models.Model):
             .filter(group=this_group,
                     end_datetime__gte=timezone.now(),
                     completed_datetime__isnull=True)
-        return (running_challenges.exists())
+        return running_challenges.exists()
+
+    @staticmethod
+    def get_running_challenge(this_group):
+        # type: (Group) -> GroupChallenge
+        """
+        :param this_group: Group which a challenge exists
+        :return: GroupChallenge that is not yet completed but has begun.
+        """
+        return GroupChallenge.objects \
+            .filter(group=this_group,
+                    start_datetime__gte=timezone.now(),
+                    completed_datetime__isnull=True) \
+            .get()
 
     @staticmethod
     def create_from_data(group, data):
