@@ -181,6 +181,19 @@ class GroupChallenge(models.Model):
         return running_challenges.exists()
 
     @staticmethod
+    def is_there_a_passed_challenge(this_group):
+        """
+        :param this_group: Group which to be checked
+        :return: True if there is GroupChallenge that has ended in the past,
+        but completed_datetime is null
+        """
+        running_challenges = GroupChallenge.objects \
+            .filter(group=this_group,
+                    end_datetime__lt=timezone.now(),
+                    completed_datetime__isnull=True)
+        return running_challenges.exists()
+
+    @staticmethod
     def get_running_challenge(this_group):
         # type: (Group) -> GroupChallenge
         """

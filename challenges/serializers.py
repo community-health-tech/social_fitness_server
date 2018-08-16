@@ -66,3 +66,4 @@ class ChallengeViewModelSerializer(serializers.Serializer):
     status = serializers.CharField(max_length=32)
     available = ListOfAvailableChallengestSerializer()
     running = CurrentChallengeSerializer()
+    passed = CurrentChallengeSerializer()

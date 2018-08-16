@@ -24,12 +24,15 @@ class ChallengeViewModel:
         # type: (Group) -> None
         self.status = ChallengeViewModel.__get_challenge_status(group)
         self.available = ChallengeViewModel.__get_available_challenges(group, self.status)
-        self.running = ChallengeViewModel.__get_running_challenges(group, self.status)
+        self.running = ChallengeViewModel.__get_running_challenge(group, self.status)
+        self.passed = ChallengeViewModel.__get_passed_challenge(group, self.status)
 
     @staticmethod
     def __get_challenge_status(group):
         # type: (Group) -> str
-        if GroupChallenge.is_there_a_running_challenge(group):  # TODO need to handle PASSES
+        if GroupChallenge.is_there_a_passed_challenge(group):
+            return ChallengeViewModel.STATUS_PASSED
+        elif GroupChallenge.is_there_a_running_challenge(group):
             return ChallengeViewModel.STATUS_RUNNING
         else:
             return ChallengeViewModel.STATUS_AVAILABLE
@@ -43,9 +46,18 @@ class ChallengeViewModel:
             return None
 
     @staticmethod
-    def __get_running_challenges(group, status):
+    def __get_running_challenge(group, status):
         # type: (Group) -> Optional[CurrentChallenge]
         if status == ChallengeViewModel.STATUS_RUNNING:
+            challenge = GroupChallenge.objects.filter(group=group).latest()
+            return CurrentChallenge(challenge)
+        else:
+            return None
+
+    @staticmethod
+    def __get_passed_challenge(group, status):
+        # type: (Group) -> Optional[CurrentChallenge]
+        if status == ChallengeViewModel.STATUS_PASSED:
             challenge = GroupChallenge.objects.filter(group=group).latest()
             return CurrentChallenge(challenge)
         else:
