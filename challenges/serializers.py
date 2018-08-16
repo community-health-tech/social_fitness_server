@@ -39,6 +39,10 @@ class PersonChallengeSerializer(serializers.ModelSerializer):
 
 
 class PersonProgressSerializer(serializers.Serializer):
+    person_id = serializers.IntegerField()
+    goal = serializers.IntegerField()
+    unit = serializers.CharField()
+    unit_duration = serializers.CharField()
     progress = serializers.ListField(child=serializers.IntegerField())
     progress_percent = serializers.ListField(child=serializers.FloatField())
     progress_achieved = serializers.ListField(child=serializers.BooleanField())
@@ -54,7 +58,7 @@ class CurrentChallengeSerializer(serializers.Serializer):
     end_datetime = serializers.DateTimeField()
     level_id = serializers.IntegerField()
     level_order = serializers.IntegerField()
-    challenges = PersonChallengeSerializer(many=True)
+    # challenges = PersonChallengeSerializer(many=True)
     progress = PersonProgressSerializer(many=True)
 
 
