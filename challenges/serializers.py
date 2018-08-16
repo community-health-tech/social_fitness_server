@@ -39,9 +39,9 @@ class PersonChallengeSerializer(serializers.ModelSerializer):
 
 
 class PersonProgressSerializer(serializers.Serializer):
-    progress = serializers.IntegerField(many=True)
-    progress_percent = serializers.FloatField(many=True)
-    progress_achieved = serializers.BooleanField(many=True)
+    progress = serializers.ListField(child=serializers.IntegerField())
+    progress_percent = serializers.ListField(child=serializers.FloatField())
+    progress_achieved = serializers.ListField(child=serializers.BooleanField())
     total_progress = serializers.IntegerField()
 
 

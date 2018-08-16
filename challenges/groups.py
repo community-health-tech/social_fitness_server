@@ -9,7 +9,7 @@ from people.models import Person, Membership, Group, ROLE_PARENT, ROLE_CHILD
 
 class OnePersonGroup(AbstractChallengeGroup):
 
-    __STRINGS_EN_US = {
+    STRINGS_EN_US = {
         "steps": {
             strings.PICK_TEXT: "Pick a steps adventure",
             strings.PICK_SUBTEXT: "%PERSON1_NAME%, you need to do one of these adventures within %TOTAL_DURATION%.",
@@ -31,7 +31,7 @@ class OnePersonGroup(AbstractChallengeGroup):
     }
 
     def __init__(self, group):
-        if len(group.members) != 1:
+        if len(group.members.all()) != 1:
             raise ValueError('OnePersonGroup requires Group to have only one member (found %d).' % len(group.members))
         self.person = Person.objects.get(group=group)
         self.membership = self.person.membership_set.get(group=group)
@@ -40,7 +40,7 @@ class OnePersonGroup(AbstractChallengeGroup):
     @staticmethod
     def is_type_of(group):
         # type: (Group) -> boolean
-        return len(group.members) == 1
+        return len(group.members.all()) == 1
 
     def get_reference_person(self):
         # type: () -> models.Person
@@ -50,17 +50,19 @@ class OnePersonGroup(AbstractChallengeGroup):
         # type: () -> dict
         if self.target_strings is None:
             self.target_strings = self.__compute_target_strings()
+        else:
+            self.target_strings = {}
         return self.target_strings
 
     def get_challenge_main_text(self, level, goal, is_unstarted_challenge):
         # type: (Level, int, bool) -> str
         keyword_dict = _get_string_dict(level, self, goal=goal)
-        return _get_main_text(level.unit, is_unstarted_challenge, OnePersonGroup.__STRINGS_EN_US, keyword_dict)
+        return _get_main_text(level.unit, is_unstarted_challenge, OnePersonGroup.STRINGS_EN_US, keyword_dict)
 
     def get_challenge_secondary_text(self, level, goal, is_unstarted_challenge):
         # type: (Level, int, bool) -> str
         keyword_dict = _get_string_dict(level, self, goal=goal)
-        return _get_secondary_text(level.unit, is_unstarted_challenge, OnePersonGroup.__STRINGS_EN_US, keyword_dict)
+        return _get_secondary_text(level.unit, is_unstarted_challenge, OnePersonGroup.STRINGS_EN_US, keyword_dict)
 
     # PRIVATE CLASS METHODS
     def __compute_target_strings(self):
@@ -94,7 +96,8 @@ class FamilyDyadGroup(AbstractChallengeGroup):
     }
 
     def __init__(self, group):
-        if len(group.members) < 2:
+        # type: (Group) -> None
+        if len(group.members.all()) < 2:
             raise ValueError('FamilyDyadGroup require at least two Group members (found %d).' % len(group.members))
 
         self.group = group
@@ -123,15 +126,17 @@ class FamilyDyadGroup(AbstractChallengeGroup):
     def get_challenge_main_text(self, level, goal, is_unstarted_challenge):
         # type: (Level, int, bool) -> str
         keyword_dict = _get_string_dict(level, self, goal=goal)
-        return _get_main_text(level.unit, is_unstarted_challenge, FamilyDyadGroup.__STRINGS_EN_US, keyword_dict)
+        return _get_main_text(level.unit, is_unstarted_challenge, FamilyDyadGroup.STRINGS_EN_US, keyword_dict)
 
-    def get_challenge_secondary_text(self):
-        pass
+    def get_challenge_secondary_text(self, level, goal, is_unstarted_challenge):
+        # type: (Level, int, bool) -> str
+        keyword_dict = _get_string_dict(level, self, goal=goal)
+        return _get_secondary_text(level.unit, is_unstarted_challenge, FamilyDyadGroup.STRINGS_EN_US, keyword_dict)
 
     @staticmethod
     def is_type_of(group):
-        # type: (models.Group) -> boolean
-        if len(group.members) < 2:
+        # type: (Group) -> bool
+        if len(group.members.all()) < 2:
             return False
         else:
             has_parent = False

@@ -19,6 +19,13 @@ PROGRESS_SUBTEXT = "PROGRESS_SUBTEXT"
 COMPLETE_TEXT = "COMPLETE_TEXT"
 COMPLETE_SUBTEXT = "COMPLETE_SUBTEXT"
 
+KEY_PERSON1_NAME = "KEY_PERSON1_NAME"
+KEY_PERSON1_PERSONAL = "KEY_PERSON1_PERSONAL"
+KEY_PERSON1_PRONOUN = "KEY_PERSON1_PRONOUN"
+KEY_PERSON2_NAME = "KEY_PERSON2_NAME"
+KEY_PERSON2_PERSONAL = "KEY_PERSON2_PERSONAL"
+KEY_PERSON2_PRONOUN = "KEY_PERSON2_PRONOUN"
+
 STRINGS_EN_US = {
     "steps": {
         PICK_TEXT: "Pick a steps adventure",
@@ -43,6 +50,7 @@ STRINGS_EN_US = {
 
 
 def get_text(unit, text_dict, text_key, keyword_dict):
+    # type: (str, dict, str, dict) -> str
     """
     Get the text key String based on a unit of challenge
     :param unit: unit of the challenge as defined in models.Unit
@@ -55,7 +63,8 @@ def get_text(unit, text_dict, text_key, keyword_dict):
     return __get_text_using_regex(text, keyword_dict)
 
 
-def get_text(unit, text_key, str_dict):
+def get_text_from_dict(unit, text_key, str_dict):
+    # type: (str, str, dict) -> str
     """
     Get the text key String based on a unit of challenge
     :param unit: unit of the challenge as defined in models.Unit

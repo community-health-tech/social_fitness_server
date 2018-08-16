@@ -102,7 +102,7 @@ class AvailableChallenge:
         self.unit = level.unit
         self.unit_duration = level.unit_duration
         self.total_duration = level.total_duration
-        self.text = strings.get_text(level.unit, strings.PICK_DESC, self.__get_target_strings(level, goal))
+        self.text = strings.get_text_from_dict(level.unit, strings.PICK_DESC, self.__get_target_strings(level, goal))
         self.level_id = level.pk
 
     def __get_concrete_goal(self, level, goal, milestone):
@@ -186,7 +186,7 @@ class PersonProgress:
         self.unit_duration = person_challenge.unit_duration  # type: int
         self.progress = PersonProgress.__get_person_progress(person_fitness)  # type: List[int]
         self.progress_percent = PersonProgress.__get_progress_percent(self.progress, self.goal)  # type: List[float]
-        self.progress_achieved = PersonProgress.__get_are_goal_achieved_list(self.progress_percent)  # type: List[bool]
+        self.progress_achieved = PersonProgress.__get_are_goal_achieved(self.progress_percent)  # type: List[bool]
         self.total_progress = PersonProgress.__get_total_progress(self.progress)  # type: int
 
     @staticmethod
@@ -200,19 +200,22 @@ class PersonProgress:
     @staticmethod
     def __get_progress_percent(person_daily_progress, goal):
         # type: (List[int], int) -> List[float]
-        return map(lambda one_day_progress: 100.0 * one_day_progress / goal,
-                   person_daily_progress)
+        return list(map(lambda one_day_progress: 100.0 * one_day_progress / goal,
+                   person_daily_progress))
 
     @staticmethod
     def __get_are_goal_achieved(person_daily_progress_percent):
         # type: (List(float)) -> List[bool]
-        return map(lambda progress_percent: True if progress_percent >= 100.0 else False,
-                   person_daily_progress_percent)
+        return list(map(lambda progress_percent: True if progress_percent >= 100.0 else False,
+                   person_daily_progress_percent))
 
     @staticmethod
     def __get_total_progress(person_daily_progress):
         # type: (List(int)) -> int
-        return reduce(lambda x, y: x + y, person_daily_progress)
+        total_progress = 0  # type: int
+        for one_day_steps in person_daily_progress:
+            total_progress += one_day_steps
+        return total_progress
 
 
 
