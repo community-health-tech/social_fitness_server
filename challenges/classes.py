@@ -1,6 +1,6 @@
 import logging
 
-from typing import List
+from typing import List, Optional
 
 from datetime import datetime
 
@@ -14,7 +14,7 @@ from challenges.models import LevelGroup, PersonFitnessMilestone, Level, GroupCh
 logger = logging.getLogger(__name__)
 
 
-class ChallengeViewModel():
+class ChallengeViewModel:
     """Encapsulates data for client's ChallengeManager"""
     STATUS_AVAILABLE = "AVAILABLE"
     STATUS_RUNNING = "RUNNING"
@@ -29,13 +29,14 @@ class ChallengeViewModel():
     @staticmethod
     def __get_challenge_status(group):
         # type: (Group) -> str
-        if GroupChallenge.is_there_a_running_challenge(group): # TODO need to handle PASSES
+        if GroupChallenge.is_there_a_running_challenge(group):  # TODO need to handle PASSES
             return ChallengeViewModel.STATUS_RUNNING
         else:
             return ChallengeViewModel.STATUS_AVAILABLE
 
     @staticmethod
     def __get_available_challenges(group, status):
+        # type: (Group) -> Optional[ListOfAvailableChallenges]
         if status == ChallengeViewModel.STATUS_AVAILABLE:
             return ListOfAvailableChallenges(group)
         else:
@@ -43,6 +44,7 @@ class ChallengeViewModel():
 
     @staticmethod
     def __get_running_challenges(group, status):
+        # type: (Group) -> Optional[CurrentChallenge]
         if status == ChallengeViewModel.STATUS_RUNNING:
             challenge = GroupChallenge.objects.filter(group=group).latest()
             return CurrentChallenge(challenge)
@@ -50,7 +52,7 @@ class ChallengeViewModel():
             return None
 
 
-class ListOfAvailableChallenges():
+class ListOfAvailableChallenges:
     """Encapsulates all available challenges for a particular group"""
 
     def __init__(self, group):
@@ -78,7 +80,6 @@ class ListOfAvailableChallenges():
         self.end_datetime = None # self.start_datetime + DATE_DELTA_7D # TODO
         self.level_id = level.pk
         self.level_order = level.order
-
 
     @staticmethod
     def make_list_of_challenges(level, milestone):
