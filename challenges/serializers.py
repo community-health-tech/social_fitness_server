@@ -38,6 +38,13 @@ class PersonChallengeSerializer(serializers.ModelSerializer):
     def get_goal(self, obj): return (obj.unit_goal)
 
 
+class PersonProgressSerializer(serializers.Serializer):
+    progress = serializers.IntegerField(many=True)
+    progress_percent = serializers.FloatField(many=True)
+    progress_achieved = serializers.BooleanField(many=True)
+    total_progress = serializers.IntegerField()
+
+
 class CurrentChallengeSerializer(serializers.Serializer):
     is_currently_running = serializers.BooleanField()
     text = serializers.CharField(max_length=64)
@@ -47,7 +54,8 @@ class CurrentChallengeSerializer(serializers.Serializer):
     end_datetime = serializers.DateTimeField()
     level_id = serializers.IntegerField()
     level_order = serializers.IntegerField()
-    progress = PersonChallengeSerializer(many=True)
+    challenges = PersonChallengeSerializer(many=True)
+    progress = PersonProgressSerializer(many=True)
 
 
 class ChallengeViewModelSerializer(serializers.Serializer):

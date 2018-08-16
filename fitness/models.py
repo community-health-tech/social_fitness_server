@@ -1,4 +1,6 @@
-from datetime import timedelta
+from typing import List, Set, Dict, Tuple, Text, Optional
+
+from datetime import date, timedelta
 
 from django.db import models
 from fitness_connector.models import Account
@@ -57,7 +59,7 @@ class ActivityByDay(models.Model):
 
 
 # Standard Classes
-class PersonFitness():
+class PersonFitness:
     """
     Describes a Person's Fitness
     """
@@ -65,33 +67,34 @@ class PersonFitness():
     def __init__(self, person_id, activities, role=None):
         person = Person.objects.get(pk=person_id)
         account = Account.objects.get(person__pk=person_id)
-        self.id = person_id
-        self.name = person.name
+        self.id = person_id  # type: int
+        self.name = person.name  # type: str
         self.last_pull_time = account.last_pull_time
-        self.activities = activities
-        self.role = role
+        self.activities = activities  # type: List[ActivityByDay]
+        self.role = role  # type: str
 
 
-class GroupFitness():
+class GroupFitness:
     """
     Describes every Person's Fitness in a Group group_id
     """
 
     def __init__(self, group_id, activities):
         group = Group.objects.get(pk=group_id)
-        self.id = group.id
-        self.name = group.name
-        self.activities = activities
+        self.id = group.id  # type: int
+        self.name = group.name  # type: str
+        self.activities = activities  # type: List[PersonFitness]
 
 
 # Factory Classes
-class PersonFitnessFactory():
+class PersonFitnessFactory:
     """
     Factory class to produce a PersonFitness
     """
 
     @staticmethod
     def get(person_id, start_date, end_date, role):
+        # type: (int, date, date, str) -> PersonFitness
         """
         :return: PersonFitness between start_date to end_date
         """
@@ -104,6 +107,7 @@ class PersonFitnessFactory():
 
     @staticmethod
     def get_one_day(person_id, this_date, role):
+        # type: (int, date, str) -> PersonFitness
         """
         :return: PersonFitness on this_date
         """
@@ -114,13 +118,14 @@ class PersonFitnessFactory():
         return PersonFitness(person_id, activity, role)
 
 
-class GroupFitnessFactory():
+class GroupFitnessFactory:
     """
     Factory class to produce a GroupFitness
     """
 
     @staticmethod
     def get(group_id, start_date, end_date):
+        # type: (int, date, date) -> GroupFitness
         """
         :return: GroupFitness between start_date to end_date
         """

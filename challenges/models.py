@@ -84,7 +84,7 @@ class Level(models.Model):
         )
 
     def get_target_strings(self):
-        # type: () -> object
+        # type: () -> dict
         return {
             strings.KEY_GOAL: '{:,}'.format(self.goal),
             strings.KEY_GOAL_UNIT: self.unit,
@@ -138,7 +138,7 @@ class GroupChallenge(models.Model):
         )
 
     def get_target_strings(self):
-        # type: () -> object
+        # type: () -> dict
         """
         :return: the target strings for the instance of the GroupChallenge.
         Invariant: All group members has the same goal, unit, and durations
@@ -152,6 +152,7 @@ class GroupChallenge(models.Model):
         return strings.expand_target_strings(target_strings, additional_target_strings)
 
     def add_member_challenges(self, data):
+        # type: (dict) -> list(PersonChallenge)
         """
         Create PersonChallenges for this GroupChallenges using data
         :param data: Dict of input data from AvailableChallengeSerializer
