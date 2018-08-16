@@ -166,7 +166,8 @@ class GroupChallenge(models.Model):
         return member_challenges
 
     def set_as_completed(self):
-        self.completed_datetime = timezone.now
+        self.completed_datetime = timezone.now()
+        self.save()
 
     @staticmethod
     def is_there_a_running_challenge(this_group):
@@ -203,6 +204,19 @@ class GroupChallenge(models.Model):
         return GroupChallenge.objects \
             .filter(group=this_group,
                     start_datetime__gte=timezone.now(),
+                    completed_datetime__isnull=True) \
+            .get()
+
+    @staticmethod
+    def get_passed_challenge(this_group):
+        # type: (Group) -> GroupChallenge
+        """
+        :param this_group: Group which a challenge exists
+        :return: GroupChallenge that is not yet completed but has passed.
+        """
+        return GroupChallenge.objects \
+            .filter(group=this_group,
+                    start_datetime__lt=timezone.now(),
                     completed_datetime__isnull=True) \
             .get()
 
