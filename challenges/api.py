@@ -127,8 +127,8 @@ class ChallengeCompletion(APIView):
 
     def get(self, request, format=None):
         group = people_helper.get_group(request.user.id)
-        if GroupChallenge.is_there_a_running_challenge(group):
-            group_challenge = GroupChallenge.get_running_challenge(group)
+        if GroupChallenge.is_there_a_passed_challenge(group):
+            group_challenge = GroupChallenge.get_passed_challenge(group)
             group_challenge.set_as_completed()
             return ChallengeCompletion.__get_request_completed()
         else:
@@ -141,7 +141,7 @@ class ChallengeCompletion(APIView):
 
     @staticmethod
     def __get_bad_request():
-        output = {"message": "There is no running challenge."}
+        output = {"message": "There is no passed challenge."}
         return Response(output, status.HTTP_400_BAD_REQUEST)
 
 

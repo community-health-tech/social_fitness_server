@@ -59,7 +59,7 @@ class ChallengeViewModel:
         # type: (Group) -> Optional[CurrentChallenge]
         if status == ChallengeViewModel.STATUS_PASSED:
             challenge = GroupChallenge.objects.filter(group=group).latest()
-            return CurrentChallenge(challenge)
+            return CurrentChallenge(challenge, is_new=False, is_running=False)
         else:
             return None
 
@@ -141,8 +141,8 @@ class AvailableChallenge:
 class CurrentChallenge:
     """Encapsulates a currently running GroupChallenge"""
 
-    def __init__(self, group_challenge, is_new=False):
-        # type: (GroupChallenge, bool) -> None
+    def __init__(self, group_challenge, is_new=False, is_running=True):
+        # type: (GroupChallenge, bool, bool) -> None
         group = group_challenge.group  # type: Group
         challenge_group = None  # type: AbstractChallengeGroup
 
@@ -158,7 +158,7 @@ class CurrentChallenge:
             .get()  # type: PersonChallenge
         goal = reference_person_challenge.unit_goal
 
-        self.is_currently_running = True  # type: bool
+        self.is_currently_running = is_running  # type: bool
         self.text = challenge_group.get_challenge_main_text(level, goal, is_new)  # type: str
         self.subtext = challenge_group.get_challenge_secondary_text(level, goal, is_new)  # type: str
         self.total_duration = group_challenge.duration  # type: int
