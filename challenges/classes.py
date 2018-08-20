@@ -232,7 +232,7 @@ class PersonProgress:
     @staticmethod
     def __get_progress_percent(one_day_progress, goal):
         # type: (int, int) -> Optional[float]
-        if goal <= 1:
+        if goal >= 1:
             return round(100.0 * one_day_progress / goal, 3)
         else:
             return None
