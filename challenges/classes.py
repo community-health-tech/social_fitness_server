@@ -198,7 +198,7 @@ class PersonProgress:
         self.unit_duration = person_challenge.unit_duration  # type: str
         self.progress = PersonProgress.__get_person_progress(person_fitness)  # type: List[int]
         self.progress_percent = PersonProgress.__get_progress_percent(self.progress, self.goal)  # type: List[float]
-        self.progress_achieved = PersonProgress.__get_are_goal_achieved(self.progress_percent)  # type: List[bool]
+        self.progress_achieved = PersonProgress.__get_is_goal_achieved(self.progress_percent)  # type: List[bool]
         self.total_progress = PersonProgress.__get_total_progress(self.progress)  # type: int
 
     @staticmethod
@@ -212,14 +212,14 @@ class PersonProgress:
     @staticmethod
     def __get_progress_percent(person_daily_progress, goal):
         # type: (List[int], int) -> List[float]
-        return list(map(lambda one_day_progress: PersonProgress.__get_progress_percent(one_day_progress, goal),
+        return list(map(lambda one_day_progress: PersonProgress.__get_percent(one_day_progress, goal),
                         person_daily_progress))
 
     @staticmethod
-    def __get_are_goal_achieved(person_daily_progress_percent):
+    def __get_is_goal_achieved(person_daily_progress_percent):
         # type: (List(float)) -> List[bool]
         return list(map(lambda progress_percent: PersonProgress.__get_progress_achieved(progress_percent),
-                    person_daily_progress_percent))
+                        person_daily_progress_percent))
 
     @staticmethod
     def __get_total_progress(person_daily_progress):
@@ -230,7 +230,7 @@ class PersonProgress:
         return total_progress
 
     @staticmethod
-    def __get_progress_percent(one_day_progress, goal):
+    def __get_percent(one_day_progress, goal):
         # type: (int, int) -> Optional[float]
         if goal >= 1:
             return round(100.0 * one_day_progress / goal, 3)
