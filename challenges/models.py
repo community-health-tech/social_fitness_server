@@ -217,8 +217,8 @@ class GroupChallenge(models.Model):
         return GroupChallenge.objects \
             .filter(group=this_group,
                     start_datetime__lt=timezone.now(),
-                    completed_datetime__isnull=True) \
-            .get()
+                    completed_datetime__isnull=True)\
+            .last()
 
     @staticmethod
     def create_from_data(group, data):
