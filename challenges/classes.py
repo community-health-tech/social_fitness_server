@@ -212,14 +212,14 @@ class PersonProgress:
     @staticmethod
     def __get_progress_percent(person_daily_progress, goal):
         # type: (List[int], int) -> List[float]
-        return list(map(lambda one_day_progress: round(100.0 * one_day_progress / goal, 3),
-                   person_daily_progress))
+        return list(map(lambda one_day_progress: PersonProgress.__get_progress_percent(one_day_progress, goal),
+                        person_daily_progress))
 
     @staticmethod
     def __get_are_goal_achieved(person_daily_progress_percent):
         # type: (List(float)) -> List[bool]
-        return list(map(lambda progress_percent: True if progress_percent >= 100.0 else False,
-                   person_daily_progress_percent))
+        return list(map(lambda progress_percent: PersonProgress.__get_progress_achieved(progress_percent),
+                    person_daily_progress_percent))
 
     @staticmethod
     def __get_total_progress(person_daily_progress):
@@ -228,6 +228,22 @@ class PersonProgress:
         for one_day_steps in person_daily_progress:
             total_progress += one_day_steps
         return total_progress
+
+    @staticmethod
+    def __get_progress_percent(one_day_progress, goal):
+        # type: (int, int) -> Optional[float]
+        if goal <= 1:
+            return round(100.0 * one_day_progress / goal, 3)
+        else:
+            return None
+
+    @staticmethod
+    def __get_progress_achieved(one_day_progress_percent):
+        # type: (float) -> Optional[bool]
+        if one_day_progress_percent is not None:
+            return True if one_day_progress_percent >= 100.0 else False
+        else:
+            return None
 
 
 
