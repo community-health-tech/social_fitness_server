@@ -13,10 +13,6 @@ UNIT_MINUTES = "minutes"
 UNIT_MINUTES_MODERATE = "minutes_moderate"
 UNIT_MINUTES_VIGOROUS = "minutes_vigorous"
 UNIT_DISTANCE = "distance"
-DEFAULT_STEPS = 1000;
-DEFAULT_CALS = 1500;
-DEFAULT_ACTIVE_MINUTES = 10;
-DEFAULT_DIST = 2;
 
 # Django "Enums"
 Unit = (
@@ -352,46 +348,46 @@ class PersonFitnessMilestone(models.Model):
     @staticmethod
     def create_from_7d_average(person, start_date_string, level_group):
         # type: (Person, str, LevelGroup) -> PersonFitnessMilestone
-        # start_date = parser.parse(start_date_string)
         start_date = dateparse.parse_date(start_date_string)
-        # print(start_date)
         end_date = start_date + DATE_DELTA_7D
         parent_activities = ActivityByDay.objects \
-            .filter(
-            person=person,
-            date__gte=start_date,
-            date__lt=end_date) \
-            .aggregate(
-            steps=Avg("steps"),
-            calories=Avg("calories"),
-            active_minutes=Avg("active_minutes"),
-            distance=Avg("distance")
-        )
-        steps = parent_activities["steps"] \
-            if parent_activities["steps"] > constants.MIN_STEPS \
-            else constants.DEFAULT_MILESTONE_STEPS
-        cals = parent_activities["calories"] \
-            if parent_activities["calories"] > constants.MIN_CALORIES \
-            else constants.DEFAULT_MILESTONE_CALORIES
-        mins = parent_activities["active_minutes"] \
-            if parent_activities["active_minutes"] > constants.MIN_ACTIVE_MINUTES \
-            else constants.DEFAULT_MILESTONE_ACTIVE_MINUTES
-        dist = parent_activities["distance"] \
-            if parent_activities["distance"] > constants.MIN_DISTANCE \
-            else constants.DEFAULT_MILESTONE_DISTANCE
+            .filter(person=person,
+                    date__gte=start_date,
+                    date__lt=end_date) \
+            .aggregate(steps=Avg("steps"),
+                       calories=Avg("calories"),
+                       active_minutes=Avg("active_minutes"),
+                       distance=Avg("distance"))
+
+        steps = PersonFitnessMilestone.__get_value(
+            parent_activities["steps"], constants.MIN_STEPS, constants.DEFAULT_STEPS)
+        cals = PersonFitnessMilestone.__get_value(
+            parent_activities["calories"], constants.MIN_CALORIES, constants.DEFAULT_CALORIES)
+        mins = PersonFitnessMilestone.__get_value(
+            parent_activities["active_minutes"], constants.MIN_ACTIVE_MINUTES, constants.DEFAULT_ACTIVE_MINUTES)
+        dist = PersonFitnessMilestone.__get_value(
+            parent_activities["distance"], constants.MIN_DISTANCE, constants.DEFAULT_DISTANCE)
 
         milestone = PersonFitnessMilestone.objects.create(
             person=person,
             start_datetime=start_date,
             end_datetime=end_date,
-            steps=steps if steps is not None else DEFAULT_STEPS,
-            calories=cals if cals is not None else DEFAULT_CALS,
-            active_minutes=mins if mins is not None else DEFAULT_ACTIVE_MINUTES,
+            steps=steps,
+            calories=cals,
+            active_minutes=mins,
             active_minutes_moderate=0,
             active_minutes_vigorous=0,
-            distance=dist if dist is not None else DEFAULT_DIST,
+            distance=dist,
             level_group=level_group
         )
         milestone.save()
 
         return milestone
+
+    @staticmethod
+    def __get_value(val, min, default):
+        # type: (float) -> float
+        if val < min or val is None:
+            return default
+        else:
+            return val
