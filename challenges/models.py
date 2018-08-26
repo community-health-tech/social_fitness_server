@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models import Avg
 from django.utils import timezone, dateparse
 
-from challenges import strings
+from challenges import strings, constants
 from people.models import Person, Group, Membership
 from fitness.models import ActivityByDay, DATE_DELTA_1D, DATE_DELTA_7D
 
@@ -341,7 +341,8 @@ class PersonFitnessMilestone(models.Model):
             return self.distance
 
     @staticmethod
-    def get_latest_from_person(person):
+    def get_latest_from_person():
+        # type: (Person) -> PersonFitnessMilestone
         """
         :param person: Person of interest
         :return: The latest PersonFitnessMilestone instance of the said Person
@@ -350,9 +351,10 @@ class PersonFitnessMilestone(models.Model):
 
     @staticmethod
     def create_from_7d_average(person, start_date_string, level_group):
+        # type: (Person, str, LevelGroup) -> PersonFitnessMilestone
         # start_date = parser.parse(start_date_string)
         start_date = dateparse.parse_date(start_date_string)
-        print(start_date)
+        # print(start_date)
         end_date = start_date + DATE_DELTA_7D
         parent_activities = ActivityByDay.objects \
             .filter(
@@ -365,10 +367,18 @@ class PersonFitnessMilestone(models.Model):
             active_minutes=Avg("active_minutes"),
             distance=Avg("distance")
         )
-        steps = parent_activities["steps"]
-        cals = parent_activities["calories"]
-        mins = parent_activities["active_minutes"]
-        dist = parent_activities["distance"]
+        steps = parent_activities["steps"] \
+            if parent_activities["steps"] > constants.MIN_STEPS \
+            else constants.DEFAULT_MILESTONE_STEPS
+        cals = parent_activities["calories"] \
+            if parent_activities["calories"] > constants.MIN_CALORIES \
+            else constants.DEFAULT_MILESTONE_CALORIES
+        mins = parent_activities["active_minutes"] \
+            if parent_activities["active_minutes"] > constants.MIN_ACTIVE_MINUTES \
+            else constants.DEFAULT_MILESTONE_ACTIVE_MINUTES
+        dist = parent_activities["distance"] \
+            if parent_activities["distance"] > constants.MIN_DISTANCE \
+            else constants.DEFAULT_MILESTONE_DISTANCE
 
         milestone = PersonFitnessMilestone.objects.create(
             person=person,
