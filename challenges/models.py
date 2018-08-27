@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from dateutil import parser
 from django.db import models
 from django.db.models import Avg
@@ -348,7 +348,7 @@ class PersonFitnessMilestone(models.Model):
 
     @staticmethod
     def create_from_7d_average(person, start_date_timezoned, level_group):
-        # type: (Person, datetime, LevelGroup) -> PersonFitnessMilestone
+        # type: (Person, date, LevelGroup) -> PersonFitnessMilestone
         start_date = start_date_timezoned
         end_date = start_date + DATE_DELTA_7D
         parent_activities = ActivityByDay.objects \

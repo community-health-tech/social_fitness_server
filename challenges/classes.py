@@ -71,8 +71,7 @@ class ListOfAvailableChallenges:
     def __init__(self, group):
         # type: (Group) -> None
         now = timezone.now()  # type: datetime
-        now.replace(hour=0, minute=0, second=0, microsecond=0)
-        milestone_start_date = now - DATE_DELTA_7D  # type: datetime
+        milestone_start_date = now.date() - DATE_DELTA_7D  # type: date
         level_group = LevelGroup.objects.get(pk=1)  # TODO update
 
         challenge_group = None  # type: AbstractChallengeGroup
@@ -91,7 +90,7 @@ class ListOfAvailableChallenges:
         self.subtext = challenge_group.get_challenge_secondary_text(level, goal, True)
         self.challenges = ListOfAvailableChallenges.make_list_of_challenges(level, milestone)
         self.total_duration = level.total_duration
-        self.start_datetime = now
+        self.start_datetime = now.date()
         self.end_datetime = self.start_datetime + DATE_DELTA_7D
         self.level_id = level.pk
         self.level_order = level.order
