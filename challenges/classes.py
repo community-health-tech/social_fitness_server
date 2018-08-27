@@ -3,6 +3,7 @@ import logging
 # from typing import List, Optional
 
 from datetime import datetime
+from django.utils import timezone
 
 from fitness.models import PersonFitness, GroupFitness, ActivityByDay, GroupFitnessFactory
 from people.models import Group, Person
@@ -12,6 +13,8 @@ from challenges.groups import OnePersonGroup, FamilyDyadGroup
 from challenges.models import LevelGroup, PersonFitnessMilestone, Level, GroupChallenge, PersonChallenge
 
 logger = logging.getLogger(__name__)
+
+DATE_DELTA_7D = 7  # type: int
 
 
 class ChallengeViewModel:
@@ -69,7 +72,9 @@ class ListOfAvailableChallenges:
 
     def __init__(self, group):
         # type: (Group) -> None
-        __TEMP_DATE = "2017-06-01"
+        now = timezone.now()  # type: timezone
+        milestone_start_date = now - DATE_DELTA_7D   # type: timezone
+        # __TEMP_DATE = timezone.now() -  # "2017-06-01"
         __TEMP_LEVEL_GROUP = LevelGroup.objects.get(pk=1)
 
         challenge_group = None  # type: AbstractChallengeGroup
@@ -79,7 +84,8 @@ class ListOfAvailableChallenges:
             challenge_group = OnePersonGroup(group)
 
         reference_person = challenge_group.get_reference_person()
-        milestone = PersonFitnessMilestone.create_from_7d_average(reference_person, __TEMP_DATE, __TEMP_LEVEL_GROUP)
+        milestone = PersonFitnessMilestone.create_from_7d_average(reference_person, milestone_start_date,
+                                                                  __TEMP_LEVEL_GROUP)
         level = Level.get_level_for_group(group, milestone)
         goal = None
 
@@ -88,8 +94,8 @@ class ListOfAvailableChallenges:
         self.subtext = challenge_group.get_challenge_secondary_text(level, goal, True)
         self.challenges = ListOfAvailableChallenges.make_list_of_challenges(level, milestone)
         self.total_duration = level.total_duration
-        self.start_datetime = None # timezone.now() # TODO
-        self.end_datetime = None # self.start_datetime + DATE_DELTA_7D # TODO
+        self.start_datetime = now  # __TEMP_DATE  # timezone.now() # TODO
+        self.end_datetime = self.start_datetime + DATE_DELTA_7D  # TODO
         self.level_id = level.pk
         self.level_order = level.order
 

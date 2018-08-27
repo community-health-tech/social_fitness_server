@@ -92,20 +92,20 @@ class Level(models.Model):
     def get_level_for_group(group, milestone):
         num_challenges = GroupChallenge.objects.filter(group=group).count()
         if num_challenges > 0:
-            return Level.get_next_level(group, milestone)
+            return Level.get_next_level(group)
         else:
-            return Level.get_first_level(group, milestone)
+            return Level.get_first_level(milestone)
 
     @staticmethod
-    def get_next_level(group, milestone):
+    def get_next_level(group):
         group_challenge = GroupChallenge.objects.filter(group=group).latest()
         level = group_challenge.level
         return level.next_level
 
     @staticmethod
-    def get_first_level(group, milestone):
+    def get_first_level(milestone):
         """
-        :param group: a Group object
+        :param milestone: a Milestone object
         :return: the first level of the Group
         """
         level = Level.objects.filter(group=milestone.level_group).first()
@@ -346,9 +346,9 @@ class PersonFitnessMilestone(models.Model):
         return PersonFitnessMilestone.objects.latest()
 
     @staticmethod
-    def create_from_7d_average(person, start_date_string, level_group):
-        # type: (Person, str, LevelGroup) -> PersonFitnessMilestone
-        start_date = dateparse.parse_date(start_date_string)
+    def create_from_7d_average(person, start_date_timezoned, level_group):
+        # type: (Person, timezone, LevelGroup) -> PersonFitnessMilestone
+        start_date = start_date_timezoned  # dateparse.parse_date(start_date_string)
         end_date = start_date + DATE_DELTA_7D
         parent_activities = ActivityByDay.objects \
             .filter(person=person,
