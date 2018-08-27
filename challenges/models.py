@@ -392,3 +392,22 @@ class PersonFitnessMilestone(models.Model):
             return default
         else:
             return val
+
+    @staticmethod
+    def create_from_predefined_average(person, start_date_timezoned, level_group, steps_average):
+        # type: (Person, date, LevelGroup, int) -> PersonFitnessMilestone
+        milestone = PersonFitnessMilestone.objects.create(
+            person=person,
+            start_datetime=start_date_timezoned,
+            end_datetime=start_date_timezoned + DATE_DELTA_7D,
+            steps=steps_average,
+            calories=constants.DEFAULT_CALORIES,
+            active_minutes=constants.DEFAULT_ACTIVE_MINUTES,
+            active_minutes_moderate=0,
+            active_minutes_vigorous=0,
+            distance=constants.DEFAULT_DISTANCE,
+            level_group=level_group
+        )
+        milestone.save()
+
+        return milestone

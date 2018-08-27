@@ -19,9 +19,9 @@ class Challenges(APIView):
     if there are no running challenges.
     """
 
-    def get(self, request, format=None):
+    def get(self, request, steps_average=None, format=None):
         group = people_helper.get_group(request.user.id)
-        challenge_view_model = ChallengeViewModel(group);
+        challenge_view_model = ChallengeViewModel(group, steps_average=steps_average)
         serializer = ChallengeViewModelSerializer(challenge_view_model)
         return Response(serializer.data)
 

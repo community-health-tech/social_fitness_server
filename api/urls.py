@@ -34,20 +34,23 @@ urlpatterns = [
     # Logged Family's: Challenges
     url(r'^group/challenges$', Challenges.as_view()),
 
-    # Logged Family's: Challenges
-    url(r'^group/challenges2$', Challenges.as_view()),
+    # Logged Family's: Challenges with average set by the user
+    url(r'^group/challenges/steps_average/(?P<steps_average>[0-9]+)/$', Challenges.as_view()),
 
     # Logged Family's: Complete the currently running challenges
     url(r'^group/challenges/set_completed$', ChallengeCompletion.as_view()),
 
+    # Logged Family's: Challenges
+    # url(r'^group/challenges2$', Challenges.as_view()),
+
     # Logged Family's: all challenges that can be selected
-    url(r'^group/challenges/available$', Available.as_view()),
+    # url(r'^group/challenges/available$', Available.as_view()),
 
     # Logged Family's: create a new challenge from available challenges
-    url(r'^group/challenges/create$', Create.as_view()),
+    # url(r'^group/challenges/create$', Create.as_view()),
 
     # Logged Family's: create a new challenge from available challenges
-    url(r'^group/challenges/current$', Current.as_view()),
+    # url(r'^group/challenges/current$', Current.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

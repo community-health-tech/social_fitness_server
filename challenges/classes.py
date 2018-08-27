@@ -2,12 +2,12 @@ import logging
 
 # from typing import List, Optional
 
-from datetime import datetime
+from datetime import datetime, date
 from django.utils import timezone
 
 from fitness.models import PersonFitness, GroupFitness, ActivityByDay, GroupFitnessFactory, DATE_DELTA_7D
 from people.models import Group, Person
-from challenges import strings
+from challenges import strings, constants
 from challenges.abstracts import AbstractChallengeGroup
 from challenges.groups import OnePersonGroup, FamilyDyadGroup
 from challenges.models import LevelGroup, PersonFitnessMilestone, Level, GroupChallenge, PersonChallenge
@@ -21,10 +21,10 @@ class ChallengeViewModel:
     STATUS_RUNNING = "RUNNING"
     STATUS_PASSED = "PASSED"
 
-    def __init__(self, group):
-        # type: (Group) -> None
+    def __init__(self, group, steps_average=None):
+        # type: (Group, int) -> None
         self.status = ChallengeViewModel.__get_challenge_status(group)
-        self.available = ChallengeViewModel.__get_available_challenges(group, self.status)
+        self.available = ChallengeViewModel.__get_available_challenges(group, self.status, steps_average)
         self.running = ChallengeViewModel.__get_running_challenge(group, self.status)
         self.passed = ChallengeViewModel.__get_passed_challenge(group, self.status)
 
@@ -39,10 +39,10 @@ class ChallengeViewModel:
             return ChallengeViewModel.STATUS_AVAILABLE
 
     @staticmethod
-    def __get_available_challenges(group, status):
-        # type: (Group) -> Optional[ListOfAvailableChallenges]
+    def __get_available_challenges(group, status, steps_average):
+        # type: (Group, str, int) -> Optional[ListOfAvailableChallenges]
         if status == ChallengeViewModel.STATUS_AVAILABLE:
-            return ListOfAvailableChallenges(group)
+            return ListOfAvailableChallenges(group, steps_average)
         else:
             return None
 
@@ -68,8 +68,8 @@ class ChallengeViewModel:
 class ListOfAvailableChallenges:
     """Encapsulates all available challenges for a particular group"""
 
-    def __init__(self, group):
-        # type: (Group) -> None
+    def __init__(self, group, steps_average=None):
+        # type: (Group, int) -> None
         now = timezone.now()  # type: datetime
         milestone_start_date = now.date() - DATE_DELTA_7D  # type: date
         level_group = LevelGroup.objects.get(pk=1)  # TODO update
@@ -81,14 +81,14 @@ class ListOfAvailableChallenges:
             challenge_group = OnePersonGroup(group)
 
         reference_person = challenge_group.get_reference_person()
-        milestone = PersonFitnessMilestone.create_from_7d_average(reference_person, milestone_start_date, level_group)
+        milestone = self.__get_milestone(reference_person, milestone_start_date, level_group, steps_average)
         level = Level.get_level_for_group(group, milestone)
         goal = None
 
         self.is_currently_running = False
         self.text = challenge_group.get_challenge_main_text(level, goal, True)
         self.subtext = challenge_group.get_challenge_secondary_text(level, goal, True)
-        self.challenges = ListOfAvailableChallenges.make_list_of_challenges(level, milestone)
+        self.challenges = ListOfAvailableChallenges.__make_list_of_challenges(level, milestone)
         self.total_duration = level.total_duration
         self.start_datetime = now.date()
         self.end_datetime = self.start_datetime + DATE_DELTA_7D
@@ -96,7 +96,7 @@ class ListOfAvailableChallenges:
         self.level_order = level.order
 
     @staticmethod
-    def make_list_of_challenges(level, milestone):
+    def __make_list_of_challenges(level, milestone):
         # type: (Level, PersonFitnessMilestone) -> list[AvailableChallenge]
         challenges = [
             AvailableChallenge(1, level, level.subgoal_1, milestone),
@@ -104,6 +104,14 @@ class ListOfAvailableChallenges:
             AvailableChallenge(3, level, level.subgoal_3, milestone)
         ]
         return challenges
+
+    @staticmethod
+    def __get_milestone(person, start_date, level_group, steps_average):
+        # type: (Person, date, LevelGroup, int) -> PersonFitnessMilestone
+        if steps_average is None:
+            return PersonFitnessMilestone.create_from_7d_average(person, start_date, level_group)
+        else:
+            return PersonFitnessMilestone.create_from_predefined_average(person, start_date, level_group, steps_average)
 
 
 class AvailableChallenge:
