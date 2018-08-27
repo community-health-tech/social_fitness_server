@@ -8,8 +8,8 @@ from people.models import Person, Group, Membership
 
 
 # CONSTANTS
-DATE_DELTA_1D = timedelta(days=1)
-DATE_DELTA_7D = timedelta(days=7)
+DATE_DELTA_1D = timedelta(days=1)  # type: timedelta
+DATE_DELTA_7D = timedelta(days=7)  # type: timedelta
 STAGE_PRECONTEMPLATIVE = 1
 STAGE_CONTEMPLATIVE = 2
 STAGE_PREPARATION = 3
