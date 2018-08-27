@@ -73,7 +73,7 @@ class ListOfAvailableChallenges:
     def __init__(self, group):
         # type: (Group) -> None
         now = timezone.now()  # type: timezone
-        milestone_start_date = now - DATE_DELTA_7D   # type: timezone
+        milestone_start_date = now - timezone.timedelta(days=DATE_DELTA_7D)  # type: timezone
         # __TEMP_DATE = timezone.now() -  # "2017-06-01"
         __TEMP_LEVEL_GROUP = LevelGroup.objects.get(pk=1)
 
@@ -95,7 +95,7 @@ class ListOfAvailableChallenges:
         self.challenges = ListOfAvailableChallenges.make_list_of_challenges(level, milestone)
         self.total_duration = level.total_duration
         self.start_datetime = now  # __TEMP_DATE  # timezone.now() # TODO
-        self.end_datetime = self.start_datetime + DATE_DELTA_7D  # TODO
+        self.end_datetime = self.start_datetime + timezone.timedelta(days=DATE_DELTA_7D)  # TODO
         self.level_id = level.pk
         self.level_order = level.order
 
