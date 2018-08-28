@@ -83,7 +83,7 @@ class ListOfAvailableChallenges:
         reference_person = challenge_group.get_reference_person()
         milestone = self.__get_milestone(reference_person, milestone_start_date.date(), level_group, steps_average)
         level = Level.get_level_for_group(group, milestone)
-        goal = round(level.subgoal_2 * milestone.steps / 100)  # type: int
+        goal = int(level.subgoal_2 * milestone.steps / 100)  # type: int
 
         self.is_currently_running = False
         self.text = challenge_group.get_challenge_main_text(level, goal, True)
