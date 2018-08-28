@@ -83,7 +83,7 @@ class ListOfAvailableChallenges:
         reference_person = challenge_group.get_reference_person()
         milestone = self.__get_milestone(reference_person, milestone_start_date, level_group, steps_average)
         level = Level.get_level_for_group(group, milestone)
-        goal = None
+        goal = level.subgoal_2
 
         self.is_currently_running = False
         self.text = challenge_group.get_challenge_main_text(level, goal, True)
@@ -125,7 +125,7 @@ class AvailableChallenge:
         self.unit = level.unit
         self.unit_duration = level.unit_duration
         self.total_duration = level.total_duration
-        self.text = strings.get_text_from_dict(level.unit, strings.PICK_DESC, self.__get_target_strings(level, goal))
+        self.text = strings.get_text_from_dict(level.unit, strings.PICK_DESC, self.__get_target_strings(level, self.goal))
         self.level_id = level.pk
 
     def __get_concrete_goal(self, level, goal, milestone):
