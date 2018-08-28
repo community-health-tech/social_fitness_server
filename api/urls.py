@@ -35,7 +35,7 @@ urlpatterns = [
     url(r'^group/challenges$', Challenges.as_view()),
 
     # Logged Family's: Challenges with average set by the user
-    url(r'^group/challenges/steps_average/(?P<steps_average>[0-9]+)/$', Challenges.as_view()),
+    url(r'^group/challenges/steps_average/(?P<steps_average>\d+)/$', Challenges.as_view()),
 
     # Logged Family's: Complete the currently running challenges
     url(r'^group/challenges/set_completed$', ChallengeCompletion.as_view()),
