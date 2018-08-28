@@ -106,11 +106,12 @@ class ListOfAvailableChallenges:
         return challenges
 
     @staticmethod
-    def __get_milestone(person, start_date, level_group, steps_average):
-        # type: (Person, date, LevelGroup, int) -> PersonFitnessMilestone
-        if steps_average is None:
+    def __get_milestone(person, start_date, level_group, steps_average_str):
+        # type: (Person, date, LevelGroup, str) -> PersonFitnessMilestone
+        if steps_average_str is None:
             return PersonFitnessMilestone.create_from_7d_average(person, start_date, level_group)
         else:
+            steps_average = int(steps_average_str)
             return PersonFitnessMilestone.create_from_predefined_average(person, start_date, level_group, steps_average)
 
 
