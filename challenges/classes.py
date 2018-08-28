@@ -69,9 +69,9 @@ class ListOfAvailableChallenges:
     """Encapsulates all available challenges for a particular group"""
 
     def __init__(self, group, steps_average=None):
-        # type: (Group, int) -> None
-        now = timezone.now()  # type: datetime
-        milestone_start_date = now.date() - DATE_DELTA_7D  # type: date
+        # type: (Group, str) -> None
+        now = datetime.now()  # type: datetime
+        milestone_start_date = now - DATE_DELTA_7D  # type: datetime
         level_group = LevelGroup.objects.get(pk=1)  # TODO update
 
         challenge_group = None  # type: AbstractChallengeGroup
@@ -81,7 +81,7 @@ class ListOfAvailableChallenges:
             challenge_group = OnePersonGroup(group)
 
         reference_person = challenge_group.get_reference_person()
-        milestone = self.__get_milestone(reference_person, milestone_start_date, level_group, steps_average)
+        milestone = self.__get_milestone(reference_person, milestone_start_date.date(), level_group, steps_average)
         level = Level.get_level_for_group(group, milestone)
         goal = level.subgoal_2
 
