@@ -14,6 +14,8 @@ GROUP_ROLE = (
     (ROLE_CHILD, 'None'),
 )
 
+DEFAULT_PERSON_META_PROFILE_JSON_STRING = "null"  # type: str
+
 # MODELS
 
 
@@ -31,7 +33,11 @@ class Person(models.Model):
         if PersonMeta.objects.filter(person=self).exists():
             return PersonMeta.objects.filter(person=self).first()
         else:
-            return PersonMeta.objects.create(person=self, profile_json="")
+            person_meta = PersonMeta()  # type PersonMeta
+            person_meta.person = self
+            person_meta.profile_json = DEFAULT_PERSON_META_PROFILE_JSON_STRING
+            return person_meta
+
 
     def set_meta_profile(self, json_string):
         # type: (str) -> None
