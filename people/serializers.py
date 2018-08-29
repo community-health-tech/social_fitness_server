@@ -33,26 +33,6 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = ('user_id', 'last_pull_time', 'device_version')
 
 
-class PersonMetaGetSerializer(serializers.ModelSerializer):
-    profile_json = serializers.SerializerMethodField()
-
-    class Meta:
-        model = PersonMeta
-        fields = ('profile_json', )
-
-    def get_profile_json(self, obj):
-        # type: (PersonMeta) -> object
-        return json.loads(obj.profile_json)
-
-
-class PersonMetaPostSerializer(serializers.ModelSerializer):
-    profile_json = serializers.JSONField()
-
-    class Meta:
-        model = PersonMeta
-        fields = ('profile_json', )
-
-
 class PersonSerializer(serializers.ModelSerializer):
     account = serializers.SerializerMethodField()
     profile = serializers.SerializerMethodField()
