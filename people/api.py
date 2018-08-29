@@ -1,3 +1,4 @@
+import json
 from django.http import Http404
 from rest_framework import permissions, generics, status
 from rest_framework.views import APIView
@@ -6,25 +7,34 @@ from rest_framework.request import Request
 
 from people.models import Person, Group, Circle, Membership, PersonMeta
 from people.serializers import PersonSerializer, GroupSerializer, \
-    GroupListSerializer, CircleSerializer, PersonMetaSerializer
+    GroupListSerializer, CircleSerializer, PersonMetaGetSerializer, \
+    PersonMetaPostSerializer
 from fitness_connector.activity import PersonActivity
 
 
 # HELPER METHODS
-def __get_person(user_id):
+def get_person(user_id):
     # type: (str) -> Person
     try:
         return Person.objects.get(user__id=user_id)
     except Person.DoesNotExist:
+        print("person not found")
         raise Http404
 
-def __get_group(person):
+def get_group(person):
     # type: (Person) -> Group
     try:
         return Group.objects.get(members=person)
     except Group.DoesNotExist:
+        print("group not found")
         raise Http404
 
+def get_person_meta(person):
+    # type: (Person) -> Optional(PersonMeta)
+    try:
+        return PersonMeta.objects.filter(person=person).first()
+    except PersonMeta.DoesNotExist:
+        raise Http404
 
 # CLASSES
 class UserInfo(APIView):
@@ -33,14 +43,8 @@ class UserInfo(APIView):
     """
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get_object(self, user_id):
-        try:
-            return Person.objects.get(user__id=user_id)
-        except Person.DoesNotExist:
-            raise Http404
-
     def get(self, request, format=None):
-        person = self.get_object(request.user.id)
+        person = get_person(request.user.id)
         serializer = PersonSerializer(person)
         return Response(serializer.data)
 
@@ -99,59 +103,41 @@ class UserCircleInfo(APIView):
         return Response(serializer.data)
 
 
-class PersonMetaAPIView(APIView):
+class PersonProfileInfo(APIView):
     """
+    GET request returns the Person's profile.
+    POST request sets the Person's profile.
     """
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get(self, request, user_id, format=None):
-        logged_person = __get_person(request.user.id)
-        group = __get_group(logged_person)
+    def get(self, request, person_id, format=None):
+        logged_person = get_person(request.user.id)
+        group = get_group(logged_person)
 
-        if Membership.is_member(group, user_id) is False:
+        if Membership.is_member(group, person_id) is False:
             output = {"message": "Not authorized"}
             return Response(output, status=status.HTTP_400_BAD_REQUEST)
         else:
-            person = __get_person(user_id)
-            person_meta = self._get_person_meta(person)
-            serializer = PersonMetaSerializer(person_meta)
+            person = Membership.get_member(group, person_id)
+            person_meta = person.get_meta()
+            serializer = PersonMetaGetSerializer(person_meta)
             return Response(serializer.data)
 
-    def post(self, request, user_id, format=None):
-        logged_person = __get_person(request.user.id)
-        group = __get_group(logged_person)
-        validator = PersonMetaSerializer(data=request.data)
-        if Membership.is_member(group, user_id) is False:
+    def post(self, request, person_id, format=None):
+        logged_person = get_person(request.user.id)
+        group = get_group(logged_person)
+        validator = PersonMetaPostSerializer(data=request.data) # type: PersonMetaPostSerializer
+        if Membership.is_member(group, person_id) is False:
             output = {"message": "Can't update this person's metadata"}
             return Response(output, status=status.HTTP_400_BAD_REQUEST)
         elif validator.is_valid():
             validated_data = validator.validated_data  # type: dict
-            person = __get_person(user_id)
-            PersonMetaAPIView._set_person_meta(person, validated_data)
-            output = {"message": "Person's metadata has been updated"}
-            return Response(output, status.HTTP_202_ACCEPTED)
+            person = Membership.get_member(group, person_id)
+            person.set_meta_profile(json.dumps(validated_data['profile_json']))
+            return Response(validated_data, status.HTTP_200_OK)
         else:
             errors = validator.errors
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @staticmethod
-    def _get_person_meta(person):
-        # type: (Person) -> Optional(PersonMeta)
-        try:
-            return PersonMeta.objects.filter(person=person).first()
-        except PersonMeta.DoesNotExist:
-            raise Http404
-
-    @staticmethod
-    def _set_person_meta(person, data):
-        # type: (Person, dict) -> PersonMeta
-        if PersonMeta.objects.filter(person=person).exists():
-            person_meta = PersonMeta.objects.filter(person=person).first()
-            person_meta.profile_json = data['profile_json']
-        else:
-            person_meta = PersonMeta.objects.create(person=person, profile_json=data['profile_json'])
-        person_meta.save()
-        return person_meta
 
 
 # CLASSES FOR ADMIN VIEWS (CURRENTLY NOT USED)

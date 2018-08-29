@@ -26,6 +26,22 @@ class Person(models.Model):
     def __str__(self):
         return self.name
 
+    def get_meta(self):
+        # type: () -> PersonMeta
+        if PersonMeta.objects.filter(person=self).exists():
+            return PersonMeta.objects.filter(person=self).first()
+        else:
+            return PersonMeta.objects.create(person=self, profile_json="")
+
+    def set_meta_profile(self, json_string):
+        # type: (str) -> None
+        if PersonMeta.objects.filter(person=self).exists():
+            person_meta = PersonMeta.objects.filter(person=self).first()
+            person_meta.profile_json = json_string
+        else:
+            person_meta = PersonMeta.objects.create(person=self, profile_json=json_string)
+        person_meta.save()
+
 
 class PersonMeta(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
@@ -90,6 +106,12 @@ class Membership(models.Model):
     def is_member(group, person_id):
         # type: (Group, int) -> bool
         return Membership.objects.filter(group=group, person__id=person_id).exists()
+
+    @staticmethod
+    def get_member(group, person_id):
+        # type: (Group, int) -> Person
+        membership = Membership.objects.filter(group=group, person__id=person_id).first() # type: Membership
+        return membership.person
 
 
 class CircleMembership(models.Model):

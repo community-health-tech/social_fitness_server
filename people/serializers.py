@@ -1,25 +1,57 @@
 from django.db.models.query import QuerySet
+import json
 from rest_framework import serializers
 from people.models import Person, Group, Membership, Circle, CircleMembership, PersonMeta
 from fitness_connector.models import Account
 
 
+# HELPER METHODS
+def get_person_meta_profile_json(person):
+    # type: (Person) -> object
+    person_meta = PersonMeta.objects.filter(person=person)
+
+    if person_meta.exists():
+        return json.loads(person_meta.first().profile_json)
+    else:
+        return None
+
+
+# CLASSES
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ('user_id', 'last_pull_time', 'device_version')
 
 
-class PersonSerializer(serializers.ModelSerializer):
-    account = serializers.SerializerMethodField()
+class PersonMetaGetSerializer(serializers.ModelSerializer):
     profile_json = serializers.SerializerMethodField()
 
     class Meta:
+        model = PersonMeta
+        fields = ('profile_json', )
+
+    def get_profile_json(self, obj):
+        return json.loads(obj.profile_json)
+
+
+class PersonMetaPostSerializer(serializers.ModelSerializer):
+    profile_json = serializers.JSONField()
+
+    class Meta:
+        model = PersonMeta
+        fields = ('profile_json', )
+
+
+class PersonSerializer(serializers.ModelSerializer):
+    account = serializers.SerializerMethodField()
+    profile = serializers.SerializerMethodField()
+
+    class Meta:
         model = Person
-        fields = ('id', 'name', 'account', 'profile_json')
+        fields = ('id', 'name', 'account', 'profile')
 
     def get_account(self, obj):
-        account = Account.objects.filter(person__id=obj.id)
+        account = Account.objects.filter(person=obj)
 
         if account.exists():
             serialized = AccountSerializer(account.first())
@@ -27,32 +59,19 @@ class PersonSerializer(serializers.ModelSerializer):
         else:
             return None
 
-    def get_profile_json(self, obj):
-        person_meta = PersonMeta.objects.filter(person__id=obj.id)
-
-        if person_meta.exists():
-            return person_meta.first().profile_json
-        else:
-            return None
-
-
-class PersonMetaSerializer(serializers.ModelSerializer):
-    profile_json = serializers.JSONField()
-
-    class Meta:
-        model = PersonMeta
-        fields = ('profile_json',)
+    def get_profile(self, obj):
+        return get_person_meta_profile_json(obj)
 
 
 class MembershipSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source="person.id")
     name = serializers.ReadOnlyField(source="person.name")
     account = serializers.SerializerMethodField()
-    profile_json = serializers.SerializerMethodField()
+    profile = serializers.SerializerMethodField()
 
     class Meta:
         model = Membership
-        fields = ('id', 'name', 'role', 'account')
+        fields = ('id', 'name', 'role', 'account', 'profile')
 
     def get_account(self, obj):
         account = Account.objects.filter(person__id=obj.id)
@@ -63,31 +82,21 @@ class MembershipSerializer(serializers.ModelSerializer):
         else:
             return None
 
-    def get_profile_json(self, obj):
-        person_meta = PersonMeta.objects.filter(person__id=obj.id)
-
-        if person_meta.exists():
-            return person_meta.first().profile_json
-        else:
-            return None
+    def get_profile(self, obj):
+        return get_person_meta_profile_json(obj.person)
 
 
 class CircleMembershipSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source="person.id")
     name = serializers.ReadOnlyField(source="person.name")
-    profile_json = serializers.SerializerMethodField()
+    profile = serializers.SerializerMethodField()
 
     class Meta:
         model = CircleMembership
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'profile')
 
-    def get_profile_json(self, obj):
-        person_meta = PersonMeta.objects.filter(person__id=obj.id)
-
-        if person_meta.exists():
-            return person_meta.first().profile_json
-        else:
-            return None
+    def get_profile(self, obj):
+        return get_person_meta_profile_json(obj.person)
 
 
 class GroupListSerializer(serializers.ModelSerializer):
