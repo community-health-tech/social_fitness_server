@@ -14,7 +14,7 @@ GROUP_ROLE = (
     (ROLE_CHILD, 'None'),
 )
 
-DEFAULT_PERSON_META_PROFILE_JSON_STRING = "null"  # type: str
+DEFAULT_PERSON_META_PROFILE_JSON_STRING = "{\"bio\": \"insert bio here\"}"  # type: str
 
 # MODELS
 
