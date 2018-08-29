@@ -92,7 +92,6 @@ class Create(APIView):
         else:
             return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
     def __get_end_date(self, start_datetime, data):
         total_duration = data['total_duration']
         if total_duration == "1d" :

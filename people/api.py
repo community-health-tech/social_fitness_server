@@ -1,12 +1,29 @@
 from django.http import Http404
-from rest_framework import permissions, generics
+from rest_framework import permissions, generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.request import Request
 
-from people.models import Person, Group, Circle
+from people.models import Person, Group, Circle, Membership, PersonMeta
 from people.serializers import PersonSerializer, GroupSerializer, \
-    GroupListSerializer, CircleSerializer
+    GroupListSerializer, CircleSerializer, PersonMetaSerializer
 from fitness_connector.activity import PersonActivity
+
+
+# HELPER METHODS
+def __get_person(user_id):
+    # type: (str) -> Person
+    try:
+        return Person.objects.get(user__id=user_id)
+    except Person.DoesNotExist:
+        raise Http404
+
+def __get_group(person):
+    # type: (Person) -> Group
+    try:
+        return Group.objects.get(members=person)
+    except Group.DoesNotExist:
+        raise Http404
 
 
 # CLASSES
@@ -80,6 +97,40 @@ class UserCircleInfo(APIView):
         serializer = CircleSerializer(circle)
 
         return Response(serializer.data)
+
+
+class PersonMetaAPIView(APIView):
+    """
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, user_id, format=None):
+        logged_person = __get_person(request.user.id)
+        group = __get_group(logged_person)
+        validator = PersonMetaSerializer(data=request.data)
+        if Membership.is_member(group, user_id) is False:
+            output = {"message": "Can't update this person's metadata"}
+            return Response(output, status=status.HTTP_401_UNAUTHORIZED)
+        elif validator.is_valid():
+            validated_data = validator.validated_data  # type: dict
+            person = __get_person(user_id)
+            PersonMetaAPIView._set_person_meta(person, validated_data)
+            output = {"message": "Person's metadata has been updated"}
+            return Response(output, status.HTTP_202_ACCEPTED)
+        else:
+            errors = validator.errors
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def _set_person_meta(person, data):
+        # type: (Person, dict) -> PersonMeta
+        if PersonMeta.objects.filter(person=person).exists():
+            person_meta = PersonMeta.objects.filter(person=person).first()
+            person_meta.profile_json = data['profile_json']
+        else:
+            person_meta = PersonMeta.objects.create(person=person, profile_json=data['profile_json'])
+        person_meta.save()
+        return person_meta
 
 
 # CLASSES FOR ADMIN VIEWS (CURRENTLY NOT USED)

@@ -4,13 +4,19 @@ from django.contrib.auth.models import User
 # CONSTANTS
 ROLE_PARENT = "P"
 ROLE_CHILD = "C"
+ROLE_FRIEND= "F"
+ROLE_NONE = "N"
 
 GROUP_ROLE = (
     (ROLE_PARENT, 'Parent'),
     (ROLE_CHILD, 'Child'),
+    (ROLE_FRIEND, 'Friend'),
+    (ROLE_CHILD, 'None'),
 )
 
 # MODELS
+
+
 class Person(models.Model):
     name = models.CharField(max_length=200)
     birth_date = models.DateField()
@@ -19,6 +25,14 @@ class Person(models.Model):
     
     def __str__(self):
         return self.name
+
+
+class PersonMeta(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    profile_json = models.TextField()
+
+    def __str__(self):
+        return self.person.name
 
 
 class Group(models.Model):
@@ -68,8 +82,14 @@ class Membership(models.Model):
     pronoun = models.ForeignKey(Pronoun, on_delete=models.CASCADE, default=1)
     
     def __str__(self):
-        return Membership.MEMBERSHIP_STRING.format(self.person.name, 
-            self.get_role_display(), self.group.name)
+        return Membership.MEMBERSHIP_STRING.format(self.person.name,
+                                                   self.get_role_display(),
+                                                   self.group.name)
+
+    @staticmethod
+    def is_member(group, person_id):
+        # type: (Group, int) -> bool
+        return Membership.objects.filter(group=group, person__id=person_id).exists()
 
 
 class CircleMembership(models.Model):
