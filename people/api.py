@@ -36,6 +36,14 @@ def get_person_meta(person):
     except PersonMeta.DoesNotExist:
         raise Http404
 
+def get_circle(person, circle_id):
+    # type: (Person, int) -> Circle
+    try:
+        return Circle.objects.get(members=person, id=circle_id)
+    except Circle.DoesNotExist:
+        raise Http404
+
+
 # CLASSES
 class UserInfo(APIView):
     """
@@ -56,23 +64,10 @@ class UserGroupInfo(APIView):
     """
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get_person(self, user_id):
-        try:
-            return Person.objects.get(user__id=user_id)
-        except Person.DoesNotExist:
-            raise Http404
-
-    def get_group(self, person):
-        try:
-            return Group.objects.get(members=person)
-        except Group.DoesNotExist:
-            raise Http404
-
     def get(self, request, format=None):
-        person = self.get_person(request.user.id)
-        group = self.get_group(person)
+        person = get_person(request.user.id)
+        group = get_group(person)
         serializer = GroupSerializer(group)
-
         return Response(serializer.data)
 
 
@@ -83,23 +78,10 @@ class UserCircleInfo(APIView):
     """
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get_person(self, user_id):
-        try:
-            return Person.objects.get(user__id=user_id)
-        except Person.DoesNotExist:
-            raise Http404
-
-    def get_circle(self, person, circle_id):
-        try:
-            return Circle.objects.get(members=person, id=circle_id)
-        except Circle.DoesNotExist:
-            raise Http404
-
     def get(self, request, circle_id, format=None):
-        person = self.get_person(request.user.id)
-        circle = self.get_circle(person, circle_id)
+        person = get_person(request.user.id)
+        circle = get_circle(person, circle_id)
         serializer = CircleSerializer(circle)
-
         return Response(serializer.data)
 
 
@@ -156,14 +138,8 @@ class PersonInfo(APIView):
     """
     permission_classes = (permissions.IsAdminUser,)
 
-    def get_object(self, person_id):
-        try:
-            return Person.objects.get(pk=person_id)
-        except Person.DoesNotExist:
-            raise Http404
-
     def get(self, request, person_id, format=None):
-        person = self.get_object(person_id)
+        person = get_person(person_id)
         person_activity = PersonActivity(person_id)
         response = {
             'person': {
@@ -172,7 +148,6 @@ class PersonInfo(APIView):
                 'last_pull_time': person_activity.account.last_pull_time
             }
         }
-
         return Response(response)
 
 
@@ -191,14 +166,7 @@ class GroupInfo(APIView):
     """
     permission_classes = (permissions.IsAdminUser,)
 
-    def get_object(self, group_id):
-        try:
-            return Group.objects.get(pk=group_id)
-        except Group.DoesNotExist:
-            raise Http404
-
     def get(self, request, group_id, format=None):
-        group = self.get_object(group_id)
+        group = get_person(group_id)
         serializer = GroupSerializer(group)
-
         return Response(serializer.data)
