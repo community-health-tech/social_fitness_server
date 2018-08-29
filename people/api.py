@@ -104,13 +104,26 @@ class PersonMetaAPIView(APIView):
     """
     permission_classes = (permissions.IsAuthenticated,)
 
+    def get(self, request, user_id, format=None):
+        logged_person = __get_person(request.user.id)
+        group = __get_group(logged_person)
+
+        if Membership.is_member(group, user_id) is False:
+            output = {"message": "Not authorized"}
+            return Response(output, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            person = __get_person(user_id)
+            person_meta = self._get_person_meta(person)
+            serializer = PersonMetaSerializer(person_meta)
+            return Response(serializer.data)
+
     def post(self, request, user_id, format=None):
         logged_person = __get_person(request.user.id)
         group = __get_group(logged_person)
         validator = PersonMetaSerializer(data=request.data)
         if Membership.is_member(group, user_id) is False:
             output = {"message": "Can't update this person's metadata"}
-            return Response(output, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(output, status=status.HTTP_400_BAD_REQUEST)
         elif validator.is_valid():
             validated_data = validator.validated_data  # type: dict
             person = __get_person(user_id)
@@ -120,6 +133,14 @@ class PersonMetaAPIView(APIView):
         else:
             errors = validator.errors
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def _get_person_meta(person):
+        # type: (Person) -> Optional(PersonMeta)
+        try:
+            return PersonMeta.objects.filter(person=person).first()
+        except PersonMeta.DoesNotExist:
+            raise Http404
 
     @staticmethod
     def _set_person_meta(person, data):
