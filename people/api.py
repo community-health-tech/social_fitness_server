@@ -129,10 +129,19 @@ class PersonInfo(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, person_id, format=None):
-        # type: (Request, str, str) -> Response
-        person = get_person(request.user.id)
-        serializer = PersonSerializer(person)
-        return Response(serializer.data)
+        logged_person = get_person(request.user.id)
+        group = get_group(logged_person)
+
+        if person_id == "-":
+            serializer = PersonSerializer(logged_person)
+            return Response(serializer.data)
+        elif group.is_member(person_id):
+            person = group.get_member(person_id)
+            serializer = PersonSerializer(person)
+            return Response(serializer.data)
+        else:
+            output = {"message": "Not authorized"}
+            return Response(output, status=status.HTTP_400_BAD_REQUEST)
 
 
 # CLASSES FOR ADMIN VIEWS (CURRENTLY NOT USED)
