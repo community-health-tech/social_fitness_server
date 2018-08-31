@@ -1,7 +1,8 @@
 from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from fitness.api import UserGroupActivities
-from people.api import UserInfo, UserGroupInfo, UserCircleInfo, PersonInfo, PersonProfileInfo
+from people.api import UserInfo, UserGroupInfo, UserCircleInfo, PersonInfo, \
+    PersonProfileInfo, UserCircleListInfo
 from story_manager.api import UserStory, UserStoryList
 from challenges.api import Challenges, ChallengeCompletion, Available, Create, Current
 
@@ -27,6 +28,7 @@ urlpatterns = [
 
     # Logged Family's circle
     url(r'^circle/(?P<circle_id>[0-9]+)/$', UserCircleInfo.as_view()),
+    url(r'^circle/all/$', UserCircleListInfo.as_view()),
 
     # Logged Family's Activities in 7 days
     url(r'^group/activities/7d/'
@@ -44,6 +46,9 @@ urlpatterns = [
 
     # Logged Family's: Challenges with average set by the user
     url(r'^group/challenges/steps_average/(?P<steps_average>\d+)/$', Challenges.as_view()),
+
+    # Logged Family's: create a new challenge from available challenges
+    url(r'^group/challenges/create$', Create.as_view()),
 
     # Logged Family's: Complete the currently running challenges
     url(r'^group/challenges/set_completed$', ChallengeCompletion.as_view()),

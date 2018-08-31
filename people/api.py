@@ -32,9 +32,9 @@ def get_group(person):
 
 
 def get_person_meta(person):
-    # type: (Person) -> Optional(PersonMeta)
+    # type: (Person) -> PersonMeta
     try:
-        return PersonMeta.objects.filter(person=person).first()
+        return PersonMeta.objects.get(person=person)
     except PersonMeta.DoesNotExist:
         raise Http404
 
@@ -43,6 +43,13 @@ def get_circle(person, circle_id):
     # type: (Person, int) -> Circle
     try:
         return Circle.objects.get(members=person, id=circle_id)
+    except Circle.DoesNotExist:
+        raise Http404
+
+def get_list_of_circles(person):
+    # type: (Person, int) -> QuerySet
+    try:
+        return Circle.objects.filter(members=person).all()
     except Circle.DoesNotExist:
         raise Http404
 
@@ -89,12 +96,25 @@ class UserCircleInfo(APIView):
         return Response(serializer.data)
 
 
+class UserCircleListInfo(APIView):
+    """
+    Retrieve a list of Circle information in which the logged User
+    belongs to
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, format=None):
+        person = get_person_by_user_id(request.user.id)
+        list_of_circles = get_list_of_circles(person)
+        serializer = CircleSerializer(list_of_circles, many=True)
+        return Response(serializer.data)
+
+
 class PersonInfo(APIView):
     """
     GET request returns the Person's info.
     """
     permission_classes = (permissions.IsAuthenticated,)
-    parser_classes = (JSONParser,)
 
     def get(self, request, person_id, format=None):
         logged_person = get_person_by_user_id(request.user.id)
@@ -146,7 +166,9 @@ class PersonProfileInfo(APIView):
 
 
 # CLASSES FOR ADMIN VIEWS (CURRENTLY NOT USED)
-class PersonList(generics.ListAPIView):
+
+
+class AdminPersonList(generics.ListAPIView):
     """
     List all Persons
     """
@@ -174,7 +196,7 @@ class AdminPersonInfo(APIView):
         return Response(response)
 
 
-class GroupList(generics.ListAPIView):
+class AdminGroupList(generics.ListAPIView):
     """
     List all Families
     """
@@ -183,7 +205,7 @@ class GroupList(generics.ListAPIView):
     serializer_class = GroupListSerializer
 
 
-class GroupInfo(APIView):
+class AdminGroupInfo(APIView):
     """
     Retrieve a Group's detailed information
     """
