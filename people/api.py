@@ -133,16 +133,13 @@ class PersonInfo(APIView):
         logged_person = get_person(request.user.id)
         group = get_group(logged_person)
 
-        if person_id == "-":
-            serializer = PersonSerializer(logged_person)
+        if group.is_member(person_id):
+            person = group.get_member(person_id)
+            serializer = PersonSerializer(person)
             return Response(serializer.data)
-        elif Membership.is_member(group, person_id) is False:
+        else:
             output = {"message": "Not authorized"}
             return Response(output, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            person = Membership.get_member(group, person_id)
-            person_meta = person.get_meta()
-            return Response(json.loads(person_meta.profile_json))
 
     def get2(self, request, person_id, format=None):
         logged_person = get_person(request.user.id)
