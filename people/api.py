@@ -133,9 +133,9 @@ class PersonInfo(APIView):
         logged_person = get_person(request.user.id)
         group = get_group(logged_person)
 
-        if group.is_member(person_id):
-            person = group.get_member(person_id)
-            serializer = PersonSerializer(person)
+        if Membership.is_member(group, person_id):
+            membership = Membership.get_member(group, person_id)
+            serializer = PersonSerializer(membership.person)
             return Response(serializer.data)
         else:
             output = {"message": "Not authorized"}
