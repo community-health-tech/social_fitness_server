@@ -76,7 +76,7 @@ class Group(models.Model):
         return Membership.objects.filter(group=self, person__id=person_id).exists()
 
     def get_member(self, person_id):
-        # type: (int) -> bool
+        # type: (int) -> Person
         membership = Membership.objects.filter(group=self, person__id=person_id).first()  # type: Membership
         return membership.person
 
