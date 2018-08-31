@@ -71,6 +71,16 @@ class Group(models.Model):
                 return person_of_interest
         raise Exception("No Person of that role")
 
+    def is_member(self, person_id):
+        # type: (int) -> bool
+        return Membership.objects.filter(group=self, person__id=person_id).exists()
+
+    def get_member(self, person_id):
+        # type: (int) -> bool
+        membership = Membership.objects.filter(group=self, person__id=person_id).first()  # type: Membership
+        return membership.person
+
+
 
 class Circle(models.Model):
     name = models.CharField(max_length=200)
@@ -116,7 +126,7 @@ class Membership(models.Model):
     @staticmethod
     def get_member(group, person_id):
         # type: (Group, int) -> Person
-        membership = Membership.objects.filter(group=group, person__id=person_id).first() # type: Membership
+        membership = Membership.objects.filter(group=group, person__id=person_id).first()  # type: Membership
         return membership.person
 
 

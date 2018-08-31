@@ -3,6 +3,7 @@ from django.http import Http404
 from rest_framework import permissions, generics, status
 from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from people.models import Person, Group, Circle, Membership, PersonMeta
@@ -117,6 +118,30 @@ class PersonProfileInfo(APIView):
             person = Membership.get_member(group, person_id)
             person.set_meta_profile(json.dumps(request.data))
             return Response(request.data, status.HTTP_200_OK)
+
+
+class PersonInfo(APIView):
+    """
+    GET request returns the Person's profile.
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = (JSONParser,)
+
+    def get(self, request, person_id, format=None):
+        # type: (Request, str, str) -> Response
+        logged_person = get_person(request.user.id)
+        group = get_group(logged_person)
+
+        if person_id == "-":
+            serializer = PersonSerializer(logged_person)
+            return Response(serializer.data)
+        elif group.is_member(person_id):
+            person = group.get_member(person_id)
+            serializer = PersonSerializer(person)
+            return Response(serializer.data)
+        else:
+            output = {"message": "Not authorized"}
+            return Response(output, status=status.HTTP_400_BAD_REQUEST)
 
 
 # CLASSES FOR ADMIN VIEWS (CURRENTLY NOT USED)

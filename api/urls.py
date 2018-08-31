@@ -1,7 +1,7 @@
 from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from fitness.api import UserGroupActivities
-from people.api import UserInfo, UserGroupInfo, UserCircleInfo, PersonProfileInfo
+from people.api import UserInfo, UserGroupInfo, UserCircleInfo, PersonInfo, PersonProfileInfo
 from story_manager.api import UserStory, UserStoryList
 from challenges.api import Challenges, ChallengeCompletion, Available, Create, Current
 
@@ -13,6 +13,7 @@ urlpatterns = [
     # LOGGED USER'S VIEWS
     # Logged User's details
     url(r'^person/info/$', UserInfo.as_view()),
+    url(r'^person/(?P<person_id>[0-9]+|-)/$', PersonInfo.as_view()),
 
     # Logged User's: Get and set a person's metadata
     url(r'^person/(?P<person_id>[0-9]+)/meta/profile/$', PersonProfileInfo.as_view()),
