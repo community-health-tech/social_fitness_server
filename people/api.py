@@ -11,14 +11,15 @@ from people.serializers import PersonSerializer, GroupSerializer, \
     GroupListSerializer, CircleSerializer
 from fitness_connector.activity import PersonActivity
 
+# CONSTANTS
+DEFAULT_PERSON_STUB = "-"  # type: str
 
 # HELPER METHODS
-def get_person(user_id):
+def get_person_by_user_id(user_id):
     # type: (str) -> Person
     try:
         return Person.objects.get(user__id=user_id)
     except Person.DoesNotExist:
-        print("person not found")
         raise Http404
 
 
@@ -27,7 +28,6 @@ def get_group(person):
     try:
         return Group.objects.get(members=person)
     except Group.DoesNotExist:
-        print("group not found")
         raise Http404
 
 
@@ -56,7 +56,7 @@ class UserInfo(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, format=None):
-        person = get_person(request.user.id)
+        person = get_person_by_user_id(request.user.id)
         serializer = PersonSerializer(person)
         return Response(serializer.data)
 
@@ -69,7 +69,7 @@ class UserGroupInfo(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, format=None):
-        person = get_person(request.user.id)
+        person = get_person_by_user_id(request.user.id)
         group = get_group(person)
         serializer = GroupSerializer(group)
         return Response(serializer.data)
@@ -83,10 +83,33 @@ class UserCircleInfo(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, circle_id, format=None):
-        person = get_person(request.user.id)
+        person = get_person_by_user_id(request.user.id)
         circle = get_circle(person, circle_id)
         serializer = CircleSerializer(circle)
         return Response(serializer.data)
+
+
+class PersonInfo(APIView):
+    """
+    GET request returns the Person's info.
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = (JSONParser,)
+
+    def get(self, request, person_id, format=None):
+        logged_person = get_person_by_user_id(request.user.id)
+        group = get_group(logged_person)
+
+        if person_id == DEFAULT_PERSON_STUB:
+            serializer = PersonSerializer(logged_person)
+            return Response(serializer.data)
+        elif group.is_member(person_id):
+            person = group.get_member(person_id)
+            serializer = PersonSerializer(person)
+            return Response(serializer.data)
+        else:
+            output = {"message": "Not authorized"}
+            return Response(output, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PersonProfileInfo(APIView):
@@ -98,7 +121,7 @@ class PersonProfileInfo(APIView):
     parser_classes = (JSONParser,)
 
     def get(self, request, person_id, format=None):
-        logged_person = get_person(request.user.id)
+        logged_person = get_person_by_user_id(request.user.id)
         group = get_group(logged_person)
 
         if group.is_member(person_id) is False:
@@ -110,7 +133,7 @@ class PersonProfileInfo(APIView):
             return Response(json.loads(person_meta.profile_json))
 
     def post(self, request, person_id, format=None):
-        logged_person = get_person(request.user.id)
+        logged_person = get_person_by_user_id(request.user.id)
         group = get_group(logged_person)
 
         if group.is_member(person_id) is False:
@@ -120,29 +143,6 @@ class PersonProfileInfo(APIView):
             person = group.get_member(person_id)
             person.set_meta_profile(json.dumps(request.data))
             return Response(request.data, status.HTTP_200_OK)
-
-
-class PersonInfo(APIView):
-    """
-    GET request returns the Person's info.
-    """
-    permission_classes = (permissions.IsAuthenticated,)
-    parser_classes = (JSONParser,)
-
-    def get(self, request, person_id, format=None):
-        logged_person = get_person(request.user.id)
-        group = get_group(logged_person)
-
-        if person_id == "-":
-            serializer = PersonSerializer(logged_person)
-            return Response(serializer.data)
-        elif group.is_member(person_id):
-            person = group.get_member(person_id)
-            serializer = PersonSerializer(person)
-            return Response(serializer.data)
-        else:
-            output = {"message": "Not authorized"}
-            return Response(output, status=status.HTTP_400_BAD_REQUEST)
 
 
 # CLASSES FOR ADMIN VIEWS (CURRENTLY NOT USED)
@@ -155,14 +155,14 @@ class PersonList(generics.ListAPIView):
     serializer_class = PersonSerializer
 
 
-class PersonInfo(APIView):
+class AdminPersonInfo(APIView):
     """
     Retrieve a Person's detailed information
     """
     permission_classes = (permissions.IsAdminUser,)
 
     def get(self, request, person_id, format=None):
-        person = get_person(person_id)
+        person = get_person_by_user_id(person_id)
         person_activity = PersonActivity(person_id)
         response = {
             'person': {
@@ -190,6 +190,6 @@ class GroupInfo(APIView):
     permission_classes = (permissions.IsAdminUser,)
 
     def get(self, request, group_id, format=None):
-        group = get_person(group_id)
+        group = get_person_by_user_id(group_id)
         serializer = GroupSerializer(group)
         return Response(serializer.data)
