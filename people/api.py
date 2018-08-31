@@ -47,6 +47,8 @@ def get_circle(person, circle_id):
         raise Http404
 
 # CLASSES
+
+
 class UserInfo(APIView):
     """
     Retrieve current User's detailed information
@@ -122,26 +124,15 @@ class PersonProfileInfo(APIView):
 
 class PersonInfo(APIView):
     """
-    GET request returns the Person's profile.
+    GET request returns the Person's info.
     """
     permission_classes = (permissions.IsAuthenticated,)
-    parser_classes = (JSONParser,)
 
     def get(self, request, person_id, format=None):
         # type: (Request, str, str) -> Response
-        logged_person = get_person(request.user.id)
-        group = get_group(logged_person)
-
-        if person_id == "-":
-            serializer = PersonSerializer(logged_person)
-            return Response(serializer.data)
-        elif group.is_member(person_id):
-            person = group.get_member(person_id)
-            serializer = PersonSerializer(person)
-            return Response(serializer.data)
-        else:
-            output = {"message": "Not authorized"}
-            return Response(output, status=status.HTTP_400_BAD_REQUEST)
+        person = get_person(request.user.id)
+        serializer = PersonSerializer(person)
+        return Response(serializer.data)
 
 
 # CLASSES FOR ADMIN VIEWS (CURRENTLY NOT USED)
