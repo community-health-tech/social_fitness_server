@@ -130,16 +130,9 @@ class PersonInfo(APIView):
     parser_classes = (JSONParser,)
 
     def get(self, request, person_id, format=None):
-        logged_person = get_person(request.user.id)
-        group = get_group(logged_person)
-
-        if Membership.is_member(group, person_id):
-            membership = Membership.get_member(group, person_id)
-            serializer = PersonSerializer(membership.person)
-            return Response(serializer.data)
-        else:
-            output = {"message": "Not authorized"}
-            return Response(output, status=status.HTTP_400_BAD_REQUEST)
+        person = get_person(request.user.id)
+        serializer = PersonSerializer(person)
+        return Response(serializer.data)
 
     def get2(self, request, person_id, format=None):
         logged_person = get_person(request.user.id)
