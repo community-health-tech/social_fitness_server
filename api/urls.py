@@ -12,13 +12,15 @@ urlpatterns = [
 
     # LOGGED USER'S VIEWS
     # Logged User's details
+    url(r'^user/$', UserInfo.as_view()),
     url(r'^person/info/$', UserInfo.as_view()),
-    url(r'^person/(?P<person_id>[0-9]+)/info/$', PersonInfo.as_view()),
+    url(r'^person/(?P<person_id>[0-9]+|-)/$', PersonInfo.as_view()),
 
     # Logged User's: Get and set a person's metadata
     url(r'^person/(?P<person_id>[0-9]+)/meta/profile/$', PersonProfileInfo.as_view()),
 
     # Logged Family's details
+    url(r'^group/', UserGroupInfo.as_view()),
     url(r'^group/info/', UserGroupInfo.as_view()),
 
     # Logged Family's circle

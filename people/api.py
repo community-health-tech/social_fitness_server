@@ -130,11 +130,6 @@ class PersonInfo(APIView):
     parser_classes = (JSONParser,)
 
     def get(self, request, person_id, format=None):
-        person = get_person(request.user.id)
-        serializer = PersonSerializer(person)
-        return Response(serializer.data)
-
-    def get2(self, request, person_id, format=None):
         logged_person = get_person(request.user.id)
         group = get_group(logged_person)
 
