@@ -1,0 +1,5 @@
+[
+  {"model": "story_manager.category", "pk": 1, "fields": {"name": "Precontemplators", "short_name": "PC"}},
+  {"model": "story_manager.category", "pk": 2, "fields": {"name": "Contemplator or Preparation", "short_name": "Ct"}},
+  {"model": "story_manager.category", "pk": 3, "fields": {"name": "Action or Maintenance", "short_name": "AM"}}
+]

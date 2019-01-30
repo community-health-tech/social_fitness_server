@@ -6,12 +6,21 @@ GROUPSTORY_ADMIN_STRING = "{0} reading '{1}'"
 
 
 # Models
+class Category(models.Model):
+    name = models.CharField(max_length=50)
+    short_name = models.CharField(max_length=2)
+
 
 class Story(models.Model):
     title = models.CharField(max_length=50)
     cover_url = models.URLField(max_length=200)
     def_url = models.URLField(max_length=200)
     slug = models.SlugField(max_length=25)
+    is_locked = models.BooleanField(default=False)
+    category = models.ForeignKey(Category, null=True, blank=True, default=None,
+                                   on_delete=models.SET_NULL)
+    next_story = models.ForeignKey('self', null=True, blank=True, default=None,
+                                   on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name_plural = "stories"

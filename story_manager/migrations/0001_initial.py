@@ -8,12 +8,9 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    replaces = [('story_manager', '0001_initial'), ('story_manager', '0002_auto_20171004_1624')]
-
     initial = True
 
     dependencies = [
-        ('people', '0001_initial'),
     ]
 
     operations = [
