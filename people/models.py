@@ -28,6 +28,9 @@ class Person(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name_plural = "people"
+
     def get_meta(self):
         # type: () -> PersonMeta
         if PersonMeta.objects.filter(person=self).exists():
