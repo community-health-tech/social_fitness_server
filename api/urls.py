@@ -2,6 +2,7 @@ from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from fitness.api import UserGroupActivities
 from fitness_connector import views as fitness_connector_views
+from fitness_connector.api import PersonFitnessDataSync
 from people.api import UserInfo, UserGroupInfo, UserCircleInfo, PersonInfo, \
     PersonProfileInfo, UserCircleListInfo
 from story_manager.api import UserStory, UserStoryList
@@ -54,7 +55,8 @@ urlpatterns = [
     url(r'^group/challenges/set_completed$', ChallengeCompletion.as_view()),
 
     # Sync the fitbit data of the person
-    url(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', fitness_connector_views.update, name='update'),
+    # url(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', fitness_connector_views.update, name='update'),
+    url(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', PersonFitnessDataSync.as_view()),
 
     # Logged Family's: Challenges
     # url(r'^group/challenges2$', Challenges.as_view()),

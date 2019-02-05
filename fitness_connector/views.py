@@ -19,8 +19,8 @@ def authorize(request):
     
 def update (request, person_id):
     person_activity = PersonActivity(person_id)
-    last_sync_time = person_activity.pull_recent_data()
-    person_fitness_sync = PersonFitnessSyncResult(person_id, last_sync_time)
-    serializer = PersonFitnessSyncResultSerializer(person_fitness_sync)
-    return Response(serializer.data)
-    # return HttpResponse(person_activity.pull_recent_data())
+    #last_sync_time = person_activity.pull_recent_data()
+    #person_fitness_sync = PersonFitnessSyncResult(person_id, last_sync_time)
+    #serializer = PersonFitnessSyncResultSerializer(person_fitness_sync)
+    #return Response(serializer.data)
+    return HttpResponse(person_activity.pull_recent_data())
