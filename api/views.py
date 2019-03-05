@@ -7,10 +7,10 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from api.settings import CRED_PATH
 from people.models import Person, Group
 
 ONE_HOUR_IN_SECONDS = 60 * 60
-CRED_PATH = '../cred/wellness-storytelling-firebase-adminsdk-osfs2-eca160348c.json'
 
 class FirebaseToken(APIView):
     """
