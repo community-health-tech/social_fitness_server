@@ -1,5 +1,7 @@
 from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
+
+from api.views import FirebaseToken
 from fitness.api import UserGroupActivities
 from fitness_connector import views as fitness_connector_views
 from fitness_connector.api import PersonFitnessDataSync
@@ -44,6 +46,7 @@ urlpatterns = [
 
     # Logged Family's: Challenges
     url(r'^group/challenges$', Challenges.as_view()),
+    url(r'^group/challenges2$', Challenges.as_view()),
 
     # Logged Family's: Challenges with average set by the user
     url(r'^group/challenges/steps_average/(?P<steps_average>\d+)/$', Challenges.as_view()),
@@ -69,6 +72,9 @@ urlpatterns = [
 
     # Logged Family's: create a new challenge from available challenges
     # url(r'^group/challenges/current$', Current.as_view()),
+
+    # Logged Family's: get a Firebase token
+    url(r'^firebase/get_token$', FirebaseToken.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
