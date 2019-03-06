@@ -27,7 +27,7 @@ class FirebaseToken(APIView):
         uid = self.__get_uid(request.user.id)
         auth_response = {
             "token": auth.create_custom_token(uid),
-            "expiredAtTimestamp": int(time.time()) + ONE_HOUR_IN_SECONDS
+            "expired_at_timestamp": int(time.time()) + ONE_HOUR_IN_SECONDS
         }
         return Response(auth_response)
 
