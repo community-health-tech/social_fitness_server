@@ -19,16 +19,15 @@ class FirebaseToken(APIView):
     """
     permission_classes = (permissions.IsAuthenticated,)
 
-    def __init__(self):
-        cred = credentials.Certificate(CRED_PATH)
-        firebase_admin.initialize_app(cred)
-
     def get(self, request, format=None):
+        cred = credentials.Certificate(CRED_PATH)
+        default_app = firebase_admin.initialize_app(cred)
         uid = self.__get_uid(request.user.id)
         auth_response = {
             "token": auth.create_custom_token(uid),
             "expired_at_timestamp": int(time.time()) + ONE_HOUR_IN_SECONDS
         }
+        firebase_admin.delete_app(default_app)
         return Response(auth_response)
 
     def __get_uid(self, user_id):
