@@ -20,10 +20,10 @@ class FirebaseToken(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def __init__(self):
-        self.cred = credentials.Certificate(CRED_PATH)
+        cred = credentials.Certificate(CRED_PATH)
+        firebase_admin.initialize_app(cred)
 
     def get(self, request, format=None):
-        self.fb_app = firebase_admin.initialize_app(self.cred)
         uid = self.__get_uid(request.user.id)
         auth_response = {
             "token": auth.create_custom_token(uid),
