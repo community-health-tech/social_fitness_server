@@ -388,7 +388,7 @@ class PersonFitnessMilestone(models.Model):
     @staticmethod
     def __get_value(val, min, default):
         # type: (float) -> float
-        if val < min or val is None:
+        if val is None or val < min:
             return default
         else:
             return val

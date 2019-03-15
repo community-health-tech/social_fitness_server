@@ -13,6 +13,10 @@ class AvailableChallengeSerializer(serializers.Serializer):
     level_id = serializers.IntegerField()
 
 
+class AvailableChallengeListField(serializers.ListField):
+    child = AvailableChallengeSerializer()
+
+
 class ListOfAvailableChallengestSerializer(serializers.Serializer):
     is_currently_running = serializers.BooleanField()
     text = serializers.CharField(max_length=128)
@@ -23,6 +27,7 @@ class ListOfAvailableChallengestSerializer(serializers.Serializer):
     level_id = serializers.IntegerField()
     level_order = serializers.IntegerField()
     challenges = AvailableChallengeSerializer(many=True)
+    challenges_by_person = serializers.DictField(child=AvailableChallengeListField())
 
 
 class PersonChallengeSerializer(serializers.ModelSerializer):

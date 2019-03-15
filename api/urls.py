@@ -8,7 +8,7 @@ from fitness_connector.api import PersonFitnessDataSync
 from people.api import UserInfo, UserGroupInfo, UserCircleInfo, PersonInfo, \
     PersonProfileInfo, UserCircleListInfo
 from story_manager.api import UserStory, UserStoryList
-from challenges.api import Challenges, ChallengeCompletion, Available, Create, Current
+from challenges.api import Challenges, ChallengeCompletion, Create
 
 urlpatterns = [
     # REST FRAMEWORK
