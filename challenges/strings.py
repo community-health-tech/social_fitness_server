@@ -30,7 +30,7 @@ STRINGS_EN_US = {
     "steps": {
         PICK_TEXT: "Pick a steps adventure",
         PICK_SUBTEXT: "%PERSON1_NAME%, you and %PERSON2_PERSONAL% need to do one of these adventures within %TOTAL_DURATION%.",
-        PICK_DESC: "Walk around %GOAL% steps every %GOAL_DURATION%!",
+        PICK_DESC: "Walk around %GOAL% steps every %GOAL_DURATION%",
 
         CONFIRM_TEXT: "Walk around %GOAL% steps every %GOAL_DURATION%",
         CONFIRM_SUBTEXT: "As an example, walking around the Boston Common is 2000 steps.",

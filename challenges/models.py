@@ -28,12 +28,12 @@ Duration = (
     ('30m', '30 minutes'),
     ('1h', 'one hour'),
     ('2h', 'two hour'),
-    ('12h', 'half day'),
-    ('1d', 'one day'),
-    ('2d', 'two day'),
-    ('3d', 'three day'),
-    ('3d', 'three day'),
-    ('7d', 'one week')
+    ('12h', 'half-day'),
+    ('1d', 'one-day'),
+    ('2d', 'two-day'),
+    ('3d', 'three-day'),
+    ('3d', 'three-day'),
+    ('7d', 'one-week')
 )
 
 DURATIONS = dict(Duration)
