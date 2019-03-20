@@ -219,10 +219,11 @@ class GroupChallenge(models.Model):
             .last()
 
     @staticmethod
-    def create_from_data(group, data):
+    def create_from_data(group, data, steps_average=None):
         """
         :param group: Group in which the GroupChallenge will be created
         :param data: Dict of input data from AvailableChallengeSerializer
+        :param steps_average: Currently not used.
         :return: GroupChallenge that has been saved
         """
         start_datetime = GroupChallenge.__get_start_datetime()

@@ -39,7 +39,7 @@ class Challenges(APIView):
         validator = AvailableChallengeSerializer(data=data)
         if validator.is_valid():
             validated_data = validator.validated_data
-            challenge = GroupChallenge.create_from_data(group, validated_data)
+            challenge = GroupChallenge.create_from_data(group, validated_data, steps_average=steps_average)
             challenge_view_model = ChallengeViewModel(group)
             serializer = ChallengeViewModelSerializer(challenge_view_model)
             # current_challenge = CurrentChallenge(challenge, is_new=True)
