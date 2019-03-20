@@ -40,7 +40,7 @@ class Challenges(APIView):
         if validator.is_valid():
             validated_data = validator.validated_data
             challenge = GroupChallenge.create_from_data(group, validated_data)
-            challenge_view_model = ChallengeViewModel(group);
+            challenge_view_model = ChallengeViewModel(group)
             serializer = ChallengeViewModelSerializer(challenge_view_model)
             # current_challenge = CurrentChallenge(challenge, is_new=True)
             # serializer = CurrentChallengeSerializer(current_challenge)

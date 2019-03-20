@@ -1,4 +1,5 @@
 from datetime import date
+import logging
 from dateutil import parser
 from django.db import models
 from django.db.models import Avg
@@ -224,9 +225,10 @@ class GroupChallenge(models.Model):
         :param data: Dict of input data from AvailableChallengeSerializer
         :return: GroupChallenge that has been saved
         """
-        start_datetime = timezone.now()
-        end_datetime = GroupChallenge.__get_end_date(start_datetime, data)
+        start_datetime = GroupChallenge.__get_start_datetime()
+        end_datetime = GroupChallenge.__get_end_datetime(start_datetime, data)
         level = Level.objects.get(id=data["level_id"])
+
         group_challenge = GroupChallenge.objects.create(
             group=group,
             duration=data["total_duration"],
@@ -234,12 +236,19 @@ class GroupChallenge(models.Model):
             end_datetime=end_datetime,
             level=level
         )
+
         group_challenge.save()
         group_challenge.add_member_challenges(data)
         return group_challenge
 
     @staticmethod
-    def __get_end_date(start_datetime, data):
+    def __get_start_datetime():
+        start_date = timezone.now()
+        start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        return start_date
+
+    @staticmethod
+    def __get_end_datetime(start_datetime, data):
         total_duration = data['total_duration']
         if total_duration == "1d":
             return start_datetime + DATE_DELTA_1D
