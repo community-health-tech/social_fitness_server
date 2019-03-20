@@ -25,7 +25,7 @@ class Challenges(APIView):
         serializer = ChallengeViewModelSerializer(challenge_view_model)
         return Response(serializer.data)
 
-    def post(self, request, format=None):
+    def post(self, request, steps_average=None, format=None):
         """
         Create new challenges uniformly for all group members
         """
@@ -33,9 +33,9 @@ class Challenges(APIView):
         if GroupChallenge.is_there_a_running_challenge(group) :
             return self.__get_bad_request()
         else:
-            return self.__post_a_new_challenge(group, request.data)
+            return self.__post_a_new_challenge(group, request.data, steps_average)
 
-    def __post_a_new_challenge(self, group, data):
+    def __post_a_new_challenge(self, group, data, steps_average):
         validator = AvailableChallengeSerializer(data=data)
         if validator.is_valid():
             validated_data = validator.validated_data
