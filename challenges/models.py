@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import logging
 from dateutil import parser
 from django.db import models
@@ -243,8 +243,9 @@ class GroupChallenge(models.Model):
 
     @staticmethod
     def __get_start_datetime():
-        start_date = timezone.now()
-        start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        today = timezone.now()
+        tz_info = timezone.get_current_timezone()
+        start_date = datetime(today.year, today.month, today.day)
         return start_date
 
     @staticmethod
