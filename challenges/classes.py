@@ -70,7 +70,7 @@ class ListOfAvailableChallenges:
 
     def __init__(self, group, steps_average=None):
         # type: (Group, str) -> None
-        now = datetime.now()  # type: datetime
+        now = timezone.now()  # type: datetime
         milestone_start_date = now - DATE_DELTA_7D  # type: datetime
         start_date = milestone_start_date.date()
         level_group = LevelGroup.objects.get(pk=1)  # TODO update
@@ -89,7 +89,7 @@ class ListOfAvailableChallenges:
         self.is_currently_running = False
         self.text = challenge_group.get_challenge_main_text(level, goal, True)
         self.subtext = challenge_group.get_challenge_secondary_text(level, goal, True)
-        self.start_datetime = now.date()
+        self.start_datetime = now
         self.end_datetime = self.start_datetime + DATE_DELTA_7D
         self.challenges = ListOfAvailableChallenges.__make_list_of_challenges(level, milestone, self.start_datetime)
         self.challenges_by_person = ListOfAvailableChallenges\
