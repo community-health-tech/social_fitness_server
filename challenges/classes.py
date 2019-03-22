@@ -93,7 +93,7 @@ class ListOfAvailableChallenges:
         self.end_datetime = self.start_datetime + DATE_DELTA_7D
         self.challenges = ListOfAvailableChallenges.__make_list_of_challenges(level, milestone, self.start_datetime)
         self.challenges_by_person = ListOfAvailableChallenges\
-            .__make_list_of_challenges_by_person(group, start_date, level_group, steps_average)
+            .__make_list_of_challenges_by_person(group, start_date, level_group, steps_average, self.start_datetime)
         self.total_duration = level.total_duration
         self.level_id = level.pk
         self.level_order = level.order
@@ -118,13 +118,15 @@ class ListOfAvailableChallenges:
             return PersonFitnessMilestone.create_from_predefined_average(person, start_date, level_group, steps_average)
 
     @staticmethod
-    def __make_list_of_challenges_by_person(group, start_date, prior_level_group, steps_average_str):
-        # type: (Group, date, LevelGroup, str) -> dict
-        list_of_challenges_by_person = dict() # type: dict
+    def __make_list_of_challenges_by_person(
+            group, start_date, prior_level_group, steps_average_str, start_datetime_utc):
+        # type: (Group, date, LevelGroup, str, datetime) -> dict
+        list_of_challenges_by_person = dict()  # type: dict
         for person in group.members.all():
-            milestone = ListOfAvailableChallenges.__get_milestone(person, start_date, prior_level_group, steps_average_str)
+            milestone = ListOfAvailableChallenges.__get_milestone(
+                person, start_date, prior_level_group, steps_average_str)
             new_level = Level.get_level_for_group(group, milestone)
-            challenges = ListOfAvailableChallenges.__make_list_of_challenges(new_level, milestone)
+            challenges = ListOfAvailableChallenges.__make_list_of_challenges(new_level, milestone, start_datetime_utc)
             list_of_challenges_by_person[person.id] = challenges
 
         return list_of_challenges_by_person
