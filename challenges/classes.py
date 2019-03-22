@@ -89,22 +89,22 @@ class ListOfAvailableChallenges:
         self.is_currently_running = False
         self.text = challenge_group.get_challenge_main_text(level, goal, True)
         self.subtext = challenge_group.get_challenge_secondary_text(level, goal, True)
-        self.challenges = ListOfAvailableChallenges.__make_list_of_challenges(level, milestone)
+        self.start_datetime = now.date()
+        self.end_datetime = self.start_datetime + DATE_DELTA_7D
+        self.challenges = ListOfAvailableChallenges.__make_list_of_challenges(level, milestone, self.start_datetime)
         self.challenges_by_person = ListOfAvailableChallenges\
             .__make_list_of_challenges_by_person(group, start_date, level_group, steps_average)
         self.total_duration = level.total_duration
-        self.start_datetime = now.date()
-        self.end_datetime = self.start_datetime + DATE_DELTA_7D
         self.level_id = level.pk
         self.level_order = level.order
 
     @staticmethod
-    def __make_list_of_challenges(level, milestone):
-        # type: (Level, PersonFitnessMilestone) -> list[AvailableChallenge]
+    def __make_list_of_challenges(level, milestone, start_datetime_utc):
+        # type: (Level, PersonFitnessMilestone, datetime) -> list[AvailableChallenge]
         challenges = [
-            AvailableChallenge(1, level, level.subgoal_1, milestone),
-            AvailableChallenge(2, level, level.subgoal_2, milestone),
-            AvailableChallenge(3, level, level.subgoal_3, milestone)
+            AvailableChallenge(1, level, level.subgoal_1, milestone, start_datetime_utc),
+            AvailableChallenge(2, level, level.subgoal_2, milestone, start_datetime_utc),
+            AvailableChallenge(3, level, level.subgoal_3, milestone, start_datetime_utc)
         ]
         return challenges
 
@@ -133,13 +133,14 @@ class ListOfAvailableChallenges:
 class AvailableChallenge:
     """Encapsulates a single available challenge"""
 
-    def __init__(self, order, level, goal, milestone):
-        # type: (int, Level, int, PersonFitnessMilestone) -> None
+    def __init__(self, order, level, goal, milestone, start_datetime_utc):
+        # type: (int, Level, int, PersonFitnessMilestone, datetime) -> None
         self.option = order
         self.goal = self.__get_concrete_goal(level, goal, milestone)
         self.unit = level.unit
         self.unit_duration = level.unit_duration
         self.total_duration = level.total_duration
+        self.start_datetime_utc = start_datetime_utc
         self.text = strings.get_text_from_dict(level.unit, strings.PICK_DESC, self.__get_target_strings(level, self.goal))
         self.level_id = level.pk
 

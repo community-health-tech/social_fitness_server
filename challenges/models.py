@@ -1,5 +1,7 @@
 from datetime import date, datetime
 import logging
+
+import pytz
 from dateutil import parser
 from django.db import models
 from django.db.models import Avg
@@ -226,7 +228,7 @@ class GroupChallenge(models.Model):
         :param steps_average: Currently not used.
         :return: GroupChallenge that has been saved
         """
-        start_datetime = GroupChallenge.__get_start_datetime()
+        start_datetime = GroupChallenge.__get_start_datetime(data)
         end_datetime = GroupChallenge.__get_end_datetime(start_datetime, data)
         level = Level.objects.get(id=data["level_id"])
 
@@ -243,10 +245,13 @@ class GroupChallenge(models.Model):
         return group_challenge
 
     @staticmethod
-    def __get_start_datetime():
-        today = timezone.now()
-        beginning_of_day = datetime.combine(today.date(), datetime.min.time())
-        return beginning_of_day + DATE_DELTA_1D
+    def __get_start_datetime(data):
+        # today_local = timezone.localtime()  # type: datetime
+        # return GroupChallenge.__get_beginning_of_day(today_local) + DATE_DELTA_1D
+        if "start_datetime_utc" in data:
+            return data["start_datetime_utc"]
+        else:
+            return timezone.now()
 
     @staticmethod
     def __get_end_datetime(start_datetime, data):
@@ -255,6 +260,13 @@ class GroupChallenge(models.Model):
             return start_datetime + DATE_DELTA_1D
         elif total_duration == "7d":
             return start_datetime + DATE_DELTA_7D
+
+    @staticmethod
+    def __get_beginning_of_day(datetime_local):
+        # type: (datetime) -> datetime
+        beginning_datetime_local = datetime_local.replace(hour=0, minute=0, second=0, microsecond=0)  # type: datetime
+        beginning_datetime_utc = beginning_datetime_local.astimezone(pytz.utc)
+        return beginning_datetime_utc
 
 
 class PersonChallenge(models.Model):

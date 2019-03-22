@@ -9,6 +9,7 @@ class AvailableChallengeSerializer(serializers.Serializer):
     unit = serializers.CharField(max_length=32)
     unit_duration = serializers.CharField(max_length=32)
     total_duration = serializers.CharField(max_length=32)
+    start_datetime_utc = serializers.DateTimeField()
     text = serializers.CharField(max_length=128, allow_blank=True, required=False)
     level_id = serializers.IntegerField()
 
