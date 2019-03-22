@@ -245,7 +245,7 @@ class GroupChallenge(models.Model):
     @staticmethod
     def __get_start_datetime():
         today = timezone.now()
-        beginning_of_day = datetime.combine(today.date(), datetime.min.time(), today.tzinfo)
+        beginning_of_day = datetime.combine(today.date(), datetime.min.time())
         return beginning_of_day + DATE_DELTA_1D
 
     @staticmethod
