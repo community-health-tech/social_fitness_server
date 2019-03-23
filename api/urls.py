@@ -56,6 +56,7 @@ urlpatterns = [
 
     # Logged Family's: Complete the currently running challenges
     url(r'^group/challenges/set_completed$', ChallengeCompletion.as_view()),
+    url(r'^group/challenges/set_completed/(?P<override>[\w-]+)/$', ChallengeCompletion.as_view()),
 
     # Sync the fitbit data of the person
     # url(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', fitness_connector_views.update, name='update'),

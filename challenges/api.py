@@ -120,14 +120,20 @@ class Current(APIView):
 
 class ChallengeCompletion(APIView):
     """
-    GET request to set the currently running challenge as completed if there is ONE running challenge.
+    GET request to set the currently running challenge as completed if there is ONE running challenge that has passed.
+    If override is set (i.e., /override/), then the challenge will be closed regardless it has passed or not.
     Return HTTP 200 if successful. Otherwise return HTTP 400.
     """
 
-    def get(self, request, format=None):
+    def get(self, request, override="none", format=None):
+        # type: (object, object, str, str) -> ChallengeCompletion
         group = people_helper.get_group(request.user.id)
         if GroupChallenge.is_there_a_passed_challenge(group):
             group_challenge = GroupChallenge.get_passed_challenge(group)
+            group_challenge.set_as_completed()
+            return ChallengeCompletion.__get_request_completed()
+        elif override == "override" and GroupChallenge.is_there_a_running_challenge(group):
+            group_challenge = GroupChallenge.get_running_challenge(group)
             group_challenge.set_as_completed()
             return ChallengeCompletion.__get_request_completed()
         else:
