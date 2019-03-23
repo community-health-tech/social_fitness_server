@@ -205,7 +205,7 @@ class GroupChallenge(models.Model):
             .filter(group=this_group,
                     start_datetime__gte=timezone.now(),
                     completed_datetime__isnull=True) \
-            .get()
+            .last()
 
     @staticmethod
     def get_passed_challenge(this_group):
