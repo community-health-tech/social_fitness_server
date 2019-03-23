@@ -203,7 +203,7 @@ class GroupChallenge(models.Model):
         """
         return GroupChallenge.objects \
             .filter(group=this_group,
-                    start_datetime__gte=timezone.now(),
+                    end_datetime__gte=timezone.now(),
                     completed_datetime__isnull=True) \
             .last()
 
