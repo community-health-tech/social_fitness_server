@@ -9,7 +9,7 @@ from django.utils import timezone, dateparse
 
 from challenges import strings, constants
 from people.models import Person, Group, Membership
-from fitness.models import ActivityByDay, DATE_DELTA_1D, DATE_DELTA_7D
+from fitness.models import ActivityByDay, DATE_DELTA_1D, DATE_DELTA_7D, DATE_DELTA_1S
 
 # Constants
 UNIT_STEPS = "steps"
@@ -251,20 +251,22 @@ class GroupChallenge(models.Model):
         if "start_datetime_utc" in data:
             return data["start_datetime_utc"]
         else:
-            return timezone.now()
+            return GroupChallenge.get_beginning_of_day_local()
+            # return timezone.now()
 
     @staticmethod
     def __get_end_datetime(start_datetime, data):
         total_duration = data['total_duration']
         if total_duration == "1d":
-            return start_datetime + DATE_DELTA_1D
+            return start_datetime + DATE_DELTA_1D - DATE_DELTA_1S
         elif total_duration == "7d":
-            return start_datetime + DATE_DELTA_7D
+            return start_datetime + DATE_DELTA_7D - DATE_DELTA_1S
 
     @staticmethod
-    def __get_beginning_of_day(datetime_local):
-        # type: (datetime) -> datetime
-        beginning_datetime_local = datetime_local.replace(hour=0, minute=0, second=0, microsecond=0)  # type: datetime
+    def get_beginning_of_day_local():
+        # type: () -> datetime
+        today_local = timezone.localtime()  # type: datetime
+        beginning_datetime_local = today_local.replace(hour=0, minute=0, second=0, microsecond=0)  # type: datetime
         beginning_datetime_utc = beginning_datetime_local.astimezone(pytz.utc)
         return beginning_datetime_utc
 

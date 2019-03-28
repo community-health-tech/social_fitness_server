@@ -5,7 +5,7 @@ import logging
 from datetime import datetime, date
 from django.utils import timezone
 
-from fitness.models import PersonFitness, GroupFitness, ActivityByDay, GroupFitnessFactory, DATE_DELTA_7D
+from fitness.models import PersonFitness, GroupFitness, ActivityByDay, GroupFitnessFactory, DATE_DELTA_7D, DATE_DELTA_1S
 from people.models import Group, Person
 from challenges import strings, constants
 from challenges.abstracts import AbstractChallengeGroup
@@ -89,8 +89,8 @@ class ListOfAvailableChallenges:
         self.is_currently_running = False
         self.text = challenge_group.get_challenge_main_text(level, goal, True)
         self.subtext = challenge_group.get_challenge_secondary_text(level, goal, True)
-        self.start_datetime = now
-        self.end_datetime = self.start_datetime + DATE_DELTA_7D
+        self.start_datetime = GroupChallenge.get_beginning_of_day_local()
+        self.end_datetime = self.start_datetime + DATE_DELTA_7D - DATE_DELTA_1S
         self.challenges = ListOfAvailableChallenges.__make_list_of_challenges(level, milestone, self.start_datetime)
         self.challenges_by_person = ListOfAvailableChallenges\
             .__make_list_of_challenges_by_person(group, start_date, level_group, steps_average, self.start_datetime)
