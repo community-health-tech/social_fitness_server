@@ -2,7 +2,7 @@ from django.db import models
 from people.models import Group
 
 
-GROUPSTORY_ADMIN_STRING = "{0} reading '{1}'"
+GROUPSTORY_ADMIN_STRING = "{0} \t\treading '{1}' \t\t\t\t({2})"
 
 
 # Models
@@ -34,7 +34,11 @@ class Story(models.Model):
         verbose_name_plural = "stories"
 
     def __str__(self):
-        return Story.MEMBERSHIP_STRING.format(self.title, self.category.name)
+        if self.category:
+            category_name = self.category.name
+        else:
+            category_name = "Uncategorized"
+        return Story.MEMBERSHIP_STRING.format(self.title, category_name)
 
 
 class GroupStory(models.Model):
@@ -47,7 +51,11 @@ class GroupStory(models.Model):
         verbose_name_plural = "group stories"
 
     def __str__(self):
-        return GROUPSTORY_ADMIN_STRING.format(self.group.name, self.story.title)
+        if self.category:
+            category_name = self.story.category.short_name
+        else:
+            category_name = "Uncategorized"
+        return GROUPSTORY_ADMIN_STRING.format(self.group.name, self.story.title, category_name)
 
 
 # Standard Classes
