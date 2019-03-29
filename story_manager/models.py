@@ -51,7 +51,7 @@ class GroupStory(models.Model):
         verbose_name_plural = "group stories"
 
     def __str__(self):
-        if self.category:
+        if self.story.category:
             category_name = self.story.category.short_name
         else:
             category_name = "Uncategorized"
