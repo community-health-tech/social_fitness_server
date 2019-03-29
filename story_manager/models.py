@@ -18,6 +18,8 @@ class Category(models.Model):
 
 
 class Story(models.Model):
+    MEMBERSHIP_STRING = "{0} ({1})"
+
     title = models.CharField(max_length=50)
     cover_url = models.URLField(max_length=200)
     def_url = models.URLField(max_length=200)
@@ -32,7 +34,7 @@ class Story(models.Model):
         verbose_name_plural = "stories"
 
     def __str__(self):
-        return self.title
+        return Story.MEMBERSHIP_STRING.format(self.title, self.category.name)
 
 
 class GroupStory(models.Model):
