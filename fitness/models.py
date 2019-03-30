@@ -67,10 +67,16 @@ class PersonFitness:
 
     def __init__(self, person_id, activities, role=None):
         person = Person.objects.get(pk=person_id)
-        account = Account.objects.get(person__pk=person_id)
+
+        try:
+            account = Account.objects.get(person__pk=person_id)
+            last_pull_time = account.last_pull_time
+        except Account.DoesNotExist:
+            last_pull_time = 0
+
         self.id = person_id  # type: int
         self.name = person.name  # type: str
-        self.last_pull_time = account.last_pull_time
+        self.last_pull_time = last_pull_time
         self.activities = activities  # type: List[ActivityByDay]
         self.role = role  # type: str
 
