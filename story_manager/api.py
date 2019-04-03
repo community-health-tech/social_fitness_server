@@ -18,7 +18,9 @@ class UserStoryList(APIView):
 
     def get(self, request, format=None):
         group = StoryHelper.get_group(request.user.id)
-        group_stories = GroupStory.objects.filter(group=group)
+        group_stories = GroupStory.objects\
+            .filter(group=group)\
+            .order_by("story__order")
         current_story_id = UserStoryList.get_current_story_id(group_stories)
 
         group_story_list = GroupStoryList(group_stories, current_story_id)

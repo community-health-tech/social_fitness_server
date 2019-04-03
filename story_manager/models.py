@@ -29,6 +29,7 @@ class Story(models.Model):
                                    on_delete=models.SET_NULL)
     next_story = models.ForeignKey('self', null=True, blank=True, default=None,
                                    on_delete=models.SET_NULL)
+    order = models.IntegerField(default=1)
 
     class Meta:
         verbose_name_plural = "stories"
