@@ -109,6 +109,7 @@ class PersonFitnessFactory:
             .filter(date__gte=start_date) \
             .filter(date__lte=end_date) \
             .filter(person_id__exact=person_id) \
+            .order_by('date') \
             .only("date", "steps", "calories", "distance")
         return PersonFitness(person_id, daily_activities, role)
 
