@@ -66,7 +66,7 @@ class RefreshAllToken(APIView):
             refresh_results[str(account.person.id)] = {
                 "person_name": account.person.name,
                 "expires_at": person_activity.account.expires_at,
-                "last_sync_time": person_activity.account.last_sync_time,
+                "last_pull_time": person_activity.account.last_pull_time,
             }
 
             time.sleep(SECONDS_BEFORE_NEXT_TOKEN_REFRESH)
