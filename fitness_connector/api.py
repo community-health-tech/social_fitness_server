@@ -63,8 +63,12 @@ class RefreshAllToken(APIView):
 
         for account in all_people_with_account:
             person_activity = PersonActivity(account.person.id)
-            refresh_results[str(account.person.id)] = \
-                person_activity.account.last_pull_time
+            refresh_results[str(account.person.id)] = {
+                "person_name": account.person.name,
+                "expires_at": person_activity.account.expires_at,
+                "last_sync_time": person_activity.account.last_sync_time,
+            }
+
             time.sleep(SECONDS_BEFORE_NEXT_TOKEN_REFRESH)
 
         return Response(refresh_results)
