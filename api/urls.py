@@ -3,8 +3,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from api.views import FirebaseToken
 from fitness.api import UserGroupActivities
-from fitness_connector import views as fitness_connector_views
-from fitness_connector.api import PersonFitnessDataSync
+from fitness_connector.api import PersonFitnessDataSync, AllUsersFitnessDataSync
 from people.api import UserInfo, UserGroupInfo, UserCircleInfo, PersonInfo, \
     PersonProfileInfo, UserCircleListInfo
 from story_manager.api import UserStory, UserStoryList
@@ -61,6 +60,7 @@ urlpatterns = [
     # Sync the fitbit data of the person
     # url(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', fitness_connector_views.update, name='update'),
     url(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', PersonFitnessDataSync.as_view()),
+    url(r'^fitbit/update/all$', AllUsersFitnessDataSync.as_view()),
 
     # Logged Family's: Challenges
     # url(r'^group/challenges2$', Challenges.as_view()),
