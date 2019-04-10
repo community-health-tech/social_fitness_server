@@ -1,9 +1,10 @@
 # from typing import List, Set, Dict, Tuple, Text, Optional
 
-from datetime import date, timedelta
-import logging
+from datetime import date, datetime, timedelta
 
+import pytz
 from django.db import models
+from django.utils import timezone
 from fitness_connector.models import Account
 from people.models import Person, Group, Membership
 
@@ -122,7 +123,16 @@ class PersonFitnessFactory:
         list_of_daily_activities = list()  # type: list
         this_date = start_date  # type: date
 
-        while this_date < end_date:
+        tomorrow_datetime = timezone.localtime() + DATE_DELTA_1D  # type: datetime
+        tomorrow_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+        tomorrow_datetime = tomorrow_datetime.astimezone(pytz.utc)
+
+        tomorrow_date = tomorrow_datetime.date()  # type: date
+
+        if tomorrow_date > end_date:
+            tomorrow_date = end_date
+
+        while this_date < tomorrow_date:
             date_string = this_date.strftime("%Y-%m-%d")
             if date_string in dict_of_activities:
                 activity_on_date = dict_of_activities[date_string]
