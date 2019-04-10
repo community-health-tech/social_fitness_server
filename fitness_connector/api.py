@@ -13,6 +13,7 @@ from people.models import Person
 
 
 SECONDS_BEFORE_NEXT_SYNC = 2  # type: int
+SECONDS_BEFORE_NEXT_TOKEN_REFRESH = 0.1  # type: float
 
 # CLASSES
 class PersonFitnessDataSync(APIView):
@@ -51,6 +52,22 @@ class AllUsersFitnessDataSync(APIView):
             return "TokenExpiredError"
         except InvalidGrantError:
             return "InvalidGrantError"
+
+
+class RefreshAllToken(APIView):
+
+    def get (self, request, format=None):
+        all_people_with_account = Account.objects.all()
+
+        refresh_results = dict()  # type: dict
+
+        for account in all_people_with_account:
+            person_activity = PersonActivity(account.person.id)
+            refresh_results[str(account.person.id)] = \
+                person_activity.account.last_pull_time
+            time.sleep(SECONDS_BEFORE_NEXT_TOKEN_REFRESH)
+
+        return Response(refresh_results)
 
 
 

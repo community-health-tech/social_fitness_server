@@ -2,12 +2,13 @@ from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from api.views import FirebaseToken
+from challenges.api import Challenges, ChallengeCompletion, Create
 from fitness.api import UserGroupActivities
-from fitness_connector.api import PersonFitnessDataSync, AllUsersFitnessDataSync
+from fitness_connector.api import PersonFitnessDataSync, \
+    AllUsersFitnessDataSync, RefreshAllToken
 from people.api import UserInfo, UserGroupInfo, UserCircleInfo, PersonInfo, \
     PersonProfileInfo, UserCircleListInfo
 from story_manager.api import UserStory, UserStoryList
-from challenges.api import Challenges, ChallengeCompletion, Create
 
 urlpatterns = [
     # REST FRAMEWORK
@@ -61,6 +62,7 @@ urlpatterns = [
     # url(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', fitness_connector_views.update, name='update'),
     url(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', PersonFitnessDataSync.as_view()),
     url(r'^fitbit/update/all$', AllUsersFitnessDataSync.as_view()),
+    url(r'^fitbit/token/update/all$', RefreshAllToken.as_view()),
 
     # Logged Family's: Challenges
     # url(r'^group/challenges2$', Challenges.as_view()),
