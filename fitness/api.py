@@ -57,7 +57,7 @@ class Person1DActivity(APIView):
     def get(self, request, person_id, date_string, format=None):
         person = self.get_object(person_id)
         start_date = parser.parse(date_string)
-        person_fitness = PersonFitnessFactory.get_one_day(person.id, start_date)
+        person_fitness = PersonFitnessFactory.get_one_day(person, start_date)
         serializer = PersonFitnessSerializer(person_fitness)
 
         return Response(serializer.data)
@@ -80,9 +80,7 @@ class PersonActivities(APIView):
         person = self.get_object(person_id)
         start_date = parser.parse(start_date_string)
         end_date = start_date + DATE_DELTA_7D
-        person_fitness = PersonFitnessFactory.get(person.id,
-                                                  start_date,
-                                                  end_date)
+        person_fitness = PersonFitnessFactory.get(person, start_date, end_date)
         serializer = PersonFitnessSerializer(person_fitness)
 
         return Response(serializer.data)
@@ -108,9 +106,7 @@ class PeopleActivities(APIView):
         group = Group.objects.get(pk=family_id)
         for person in group.members.all():
             person_activity = PersonActivity(person.id)
-            person_fitness = PersonFitnessFactory.get(person.id,
-                                                      start_date,
-                                                      end_date)
+            person_fitness = PersonFitnessFactory.get(person, start_date, end_date)
             serializer = PersonFitnessSerializer(person_fitness)
             membership = Membership.objects.get(pk=person.id)
             response = {

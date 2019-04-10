@@ -155,7 +155,7 @@ class AvailableChallenge:
     def __compute_concrete_goal(level, goal, milestone):
         # type: (Level, int, PersonFitnessMilestone) -> int
         if level.goal_is_percent:
-            return (goal * milestone.get_by_unit(level.unit)) / 100
+            return int((goal * milestone.get_by_unit(level.unit)) / 100)
         else:
             return goal
 
@@ -205,16 +205,19 @@ class CurrentChallenge:
         # type: (GroupFitness, List[PersonChallenge]) -> List[PersonProgress]
         group_fitness_progress = []  # type: List[PersonProgress]
         for person_fitness in group_fitness.activities:
-            person_challenge = CurrentChallenge.__get_person_challenge_from_set(person_fitness.id,
-                                                                                person_challenge_set)
+            person_challenge = CurrentChallenge.\
+                __get_person_challenge_from_set(person_fitness.id,
+                                                person_challenge_set)  # type: PersonChallenge
             group_fitness_progress.append(PersonProgress(person_fitness, person_challenge))
         return group_fitness_progress
 
     @staticmethod
     def __get_person_challenge_from_set(person_id, person_challenge_set):
         # type: (int, list[PersonChallenge]) -> PersonChallenge
-        person_challenge_filtered = list(filter(lambda person_challenge: person_challenge.person.id == person_id,
-                                                person_challenge_set))
+        person_challenge_filtered = list(
+            filter(
+                lambda person_challenge: person_challenge.person.id == person_id,
+                person_challenge_set))
         return person_challenge_filtered[0]
 
 
@@ -232,27 +235,30 @@ class PersonProgress:
 
     @staticmethod
     def __get_person_progress(person_fitness):
-        # type: (PersonFitness) -> List[int]
+        # type: (PersonFitness) -> list[int]
         daily_progress = []  # type: List[int]
         for activity_by_day in person_fitness.activities:
-            daily_progress.append(activity_by_day.steps)
+            if activity_by_day is None:
+                daily_progress.append(0)
+            else:
+                daily_progress.append(activity_by_day.steps)
         return daily_progress
 
     @staticmethod
     def __get_progress_percent(person_daily_progress, goal):
-        # type: (List[int], int) -> List[float]
+        # type: (list[int], int) -> list[float]
         return list(map(lambda one_day_progress: PersonProgress.__get_percent(one_day_progress, goal),
                         person_daily_progress))
 
     @staticmethod
     def __get_is_goal_achieved(person_daily_progress_percent):
-        # type: (List(float)) -> List[bool]
+        # type: (list(float)) -> list[bool]
         return list(map(lambda progress_percent: PersonProgress.__get_progress_achieved(progress_percent),
                         person_daily_progress_percent))
 
     @staticmethod
     def __get_total_progress(person_daily_progress):
-        # type: (List(int)) -> int
+        # type: (list(int)) -> int
         total_progress = 0  # type: int
         for one_day_steps in person_daily_progress:
             total_progress += one_day_steps
