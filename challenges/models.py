@@ -266,9 +266,58 @@ class GroupChallenge(models.Model):
     def get_beginning_of_day_local():
         # type: () -> datetime
         today_local = timezone.localtime()  # type: datetime
-        beginning_datetime_local = today_local.replace(hour=0, minute=0, second=0, microsecond=0)  # type: datetime
+        beginning_datetime_local = today_local.replace(
+            hour=0, minute=0, second=0, microsecond=0)  # type: datetime
         beginning_datetime_utc = beginning_datetime_local.astimezone(pytz.utc)
         return beginning_datetime_utc
+
+    ###########################################################################
+
+    @staticmethod
+    def create_individualized(group, data):
+        # type: (Group, dict) -> GroupChallenge
+        """
+        :param group: Group in which the GroupChallenge will be created
+        :param data: Dict of input data from AvailableChallengeSerializer
+        :return: GroupChallenge that has been saved
+        """
+        start_datetime = GroupChallenge.__get_start_datetime(data)
+        end_datetime = GroupChallenge.__get_end_datetime(start_datetime, data)
+        level = Level.objects.get(id=data["level_id"])
+
+        group_challenge = GroupChallenge.objects.create(
+            group=group,
+            duration=data["total_duration"],
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
+            level=level
+        )
+
+        group_challenge.save()
+        group_challenge.__add_individualized_challenges(group, data)
+        return group_challenge
+
+    def __add_individualized_challenges(self, group, data):
+        # type: (Group, dict) -> None
+        group_members = dict()  # type: dict()
+        group_member_ids = set()  # type: set(str)
+        for person in group.members.all():
+            group_members[str(person.id)] = person
+            group_member_ids.add(str(person.id))
+
+        print(group_members)
+        print(group_member_ids)
+
+        picked_challenges = data["challenges_by_person"]  # type: dict
+
+        for key in picked_challenges.keys():
+            if key in group_member_ids:
+                person = group_members[key]
+                person_data = picked_challenges[key]
+                PersonChallenge.create_from_data(person, self, person_data)
+
+
+
 
 
 class PersonChallenge(models.Model):

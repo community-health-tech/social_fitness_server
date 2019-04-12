@@ -21,10 +21,17 @@ class ChallengeViewModel:
     STATUS_RUNNING = "RUNNING"
     STATUS_PASSED = "PASSED"
 
-    def __init__(self, group, steps_average=None):
-        # type: (Group, int) -> None
+    def __init__(self, group, steps_average=None, steps_dict=None):
+        # type: (Group, str, dict) -> None
+        if steps_average is None:
+            int_steps_average = None
+        else:
+            int_steps_average = int(steps_average)
         self.status = ChallengeViewModel.__get_challenge_status(group)
-        self.available = ChallengeViewModel.__get_available_challenges(group, self.status, steps_average)
+        self.available = ChallengeViewModel.__get_available_challenges(
+            group, self.status,
+            steps_average=int_steps_average,
+            steps_dict=steps_dict)
         self.running = ChallengeViewModel.__get_running_challenge(group, self.status)
         self.passed = ChallengeViewModel.__get_passed_challenge(group, self.status)
 
@@ -39,10 +46,17 @@ class ChallengeViewModel:
             return ChallengeViewModel.STATUS_AVAILABLE
 
     @staticmethod
-    def __get_available_challenges(group, status, steps_average):
-        # type: (Group, str, int) -> Optional[ListOfAvailableChallenges]
-        if status == ChallengeViewModel.STATUS_AVAILABLE:
-            return ListOfAvailableChallenges(group, steps_average)
+    def __get_available_challenges(group, status,
+                                   steps_average=None, steps_dict=None):
+        # type: (Group, str, int, dict) -> Optional[ListOfAvailableChallenges]
+        if status is ChallengeViewModel.STATUS_AVAILABLE:
+            if steps_average is not None:
+                return ListOfAvailableChallenges(group,
+                                                 steps_average=steps_average)
+            elif steps_dict is not None:
+                return ListOfAvailableChallenges(group, steps_dict=steps_dict)
+            else:
+                return ListOfAvailableChallenges(group)
         else:
             return None
 
@@ -68,8 +82,8 @@ class ChallengeViewModel:
 class ListOfAvailableChallenges:
     """Encapsulates all available challenges for a particular group"""
 
-    def __init__(self, group, steps_average=None):
-        # type: (Group, str) -> None
+    def __init__(self, group, steps_average=None, steps_dict=None):
+        # type: (Group, int, dict) -> None
         now = timezone.now()  # type: datetime
         milestone_start_date = now - DATE_DELTA_7D  # type: datetime
         start_date = milestone_start_date.date()
@@ -92,8 +106,9 @@ class ListOfAvailableChallenges:
         self.start_datetime = GroupChallenge.get_beginning_of_day_local()
         self.end_datetime = self.start_datetime + DATE_DELTA_7D - DATE_DELTA_1S
         self.challenges = ListOfAvailableChallenges.__make_list_of_challenges(level, milestone, self.start_datetime)
-        self.challenges_by_person = ListOfAvailableChallenges\
-            .__make_list_of_challenges_by_person(group, start_date, level_group, steps_average, self.start_datetime)
+        self.challenges_by_person = self.__make_list_of_challenges_by_person(
+            group, start_date, level_group, steps_average, steps_dict,
+            self.start_datetime)
         self.total_duration = level.total_duration
         self.level_id = level.pk
         self.level_order = level.order
@@ -109,25 +124,49 @@ class ListOfAvailableChallenges:
         return challenges
 
     @staticmethod
-    def __get_milestone(person, start_date, level_group, steps_average_str):
-        # type: (Person, date, LevelGroup, str) -> PersonFitnessMilestone
-        if steps_average_str is None:
+    def __get_milestone(person, start_date, level_group, steps_average):
+        # type: (Person, date, LevelGroup, int) -> PersonFitnessMilestone
+        if steps_average is None:
             return PersonFitnessMilestone.create_from_7d_average(person, start_date, level_group)
         else:
-            steps_average = int(steps_average_str)
             return PersonFitnessMilestone.create_from_predefined_average(person, start_date, level_group, steps_average)
 
-    @staticmethod
     def __make_list_of_challenges_by_person(
-            group, start_date, prior_level_group, steps_average_str, start_datetime_utc):
-        # type: (Group, date, LevelGroup, str, datetime) -> dict
+            self, group, start_date, prior_level_group,
+            steps_average, steps_dict,
+            start_datetime_utc):
+        # type: (Group, date, LevelGroup, int, dict, datetime) -> dict
         list_of_challenges_by_person = dict()  # type: dict
-        for person in group.members.all():
-            milestone = ListOfAvailableChallenges.__get_milestone(
-                person, start_date, prior_level_group, steps_average_str)
-            new_level = Level.get_level_for_group(group, milestone)
-            challenges = ListOfAvailableChallenges.__make_list_of_challenges(new_level, milestone, start_datetime_utc)
-            list_of_challenges_by_person[person.id] = challenges
+
+        if steps_dict is None:
+            for person in group.members.all():
+                milestone = ListOfAvailableChallenges.__get_milestone(
+                    person, start_date, prior_level_group, steps_average)
+                new_level = Level.get_level_for_group(group, milestone)
+                challenges = ListOfAvailableChallenges\
+                    .__make_list_of_challenges(
+                    new_level, milestone, start_datetime_utc)
+                list_of_challenges_by_person[person.id] = challenges
+        else:
+            group_members = dict()  # type: dict()
+            group_member_ids = set()  # type: set(str)
+            for person in group.members.all():
+                group_members[str(person.id)] = person
+                group_member_ids.add(str(person.id))
+
+            for person_id in steps_dict.keys():
+                if person_id not in group_member_ids:
+                    break
+
+                person_steps = steps_dict[person_id]
+                person = group_members[person_id]
+                milestone = ListOfAvailableChallenges.__get_milestone(
+                    person, start_date, prior_level_group, person_steps)
+                new_level = Level.get_level_for_group(group, milestone)
+                challenges = ListOfAvailableChallenges \
+                    .__make_list_of_challenges(
+                    new_level, milestone, start_datetime_utc)
+                list_of_challenges_by_person[person.id] = challenges
 
         return list_of_challenges_by_person
 
@@ -183,9 +222,13 @@ class CurrentChallenge:
         reference_person = challenge_group.get_reference_person()  # type: Person
         level = group_challenge.level  # type: Level
         reference_person_challenge = PersonChallenge.objects\
-            .filter(group_challenge=group_challenge, person=reference_person)\
-            .get()  # type: PersonChallenge
-        goal = reference_person_challenge.unit_goal
+            .filter(group_challenge=group_challenge, person=reference_person)
+        #goal = reference_person_challenge.unit_goal
+
+        if (reference_person_challenge.exists()):
+            goal = reference_person_challenge.get().unit_goal
+        else:
+            goal = 0
 
         self.is_currently_running = is_running  # type: bool
         self.text = challenge_group.get_challenge_main_text(level, goal, is_new)  # type: str
@@ -196,29 +239,34 @@ class CurrentChallenge:
         self.level_id = group_challenge.level.id  # type: int
         self.level_order = group_challenge.level.order  # type: int
         self.challenges = group_challenge.personchallenge_set.all()
-        self.progress = CurrentChallenge.__get_progress(  # type: List[PersonProgress]
+        self.progress = self.__get_progress(  # type: List[PersonProgress]
             GroupFitnessFactory.get(group.id, self.start_datetime.date(), self.end_datetime.date()),
             self.challenges)
 
-    @staticmethod
-    def __get_progress(group_fitness, person_challenge_set):
-        # type: (GroupFitness, List[PersonChallenge]) -> List[PersonProgress]
-        group_fitness_progress = []  # type: List[PersonProgress]
+    def __get_progress(self, group_fitness, person_challenge_set):
+        # type: (GroupFitness, list(PersonChallenge)) -> list(PersonProgress)
+        group_fitness_progress = []  # type: list(PersonProgress)
         for person_fitness in group_fitness.activities:
-            person_challenge = CurrentChallenge.\
-                __get_person_challenge_from_set(person_fitness.id,
-                                                person_challenge_set)  # type: PersonChallenge
-            group_fitness_progress.append(PersonProgress(person_fitness, person_challenge))
+            person_challenge = self.__get_person_challenge_from_set(
+                person_fitness.id, person_challenge_set)  # type: PersonChallenge
+
+            if person_challenge is not None:
+                group_fitness_progress\
+                    .append(PersonProgress(person_fitness, person_challenge))
+
         return group_fitness_progress
 
-    @staticmethod
-    def __get_person_challenge_from_set(person_id, person_challenge_set):
-        # type: (int, list[PersonChallenge]) -> PersonChallenge
-        person_challenge_filtered = list(
-            filter(
-                lambda person_challenge: person_challenge.person.id == person_id,
-                person_challenge_set))
-        return person_challenge_filtered[0]
+    def __get_person_challenge_from_set(self, person_id, person_challenge_set):
+        # type: (int, list[PersonChallenge]) -> Optional[PersonChallenge]
+        person_challenge_filtered = list(filter(
+                lambda person_challenge:
+                    person_challenge.person.id == person_id,
+                person_challenge_set))  # type: list
+
+        if len(person_challenge_filtered) is not 0:
+            return person_challenge_filtered[0]
+        else:
+            return None
 
 
 class PersonProgress:

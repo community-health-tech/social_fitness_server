@@ -4,8 +4,10 @@ from rest_framework.views import APIView
 
 from challenges.classes import ListOfAvailableChallenges, CurrentChallenge, ChallengeViewModel
 from challenges.models import GroupChallenge
-from challenges.serializers import ListOfAvailableChallengestSerializer, AvailableChallengeSerializer, \
-    CurrentChallengeSerializer, ChallengeViewModelSerializer
+from challenges.serializers import ListOfAvailableChallengestSerializer, \
+    AvailableChallengeSerializer, \
+    CurrentChallengeSerializer, ChallengeViewModelSerializer, \
+    IndividualizedGroupChallengeSerializer, AverageStepsSerializers
 from fitness.models import DATE_DELTA_7D, DATE_DELTA_1D
 from people import helpers as people_helper
 
@@ -44,6 +46,95 @@ class Challenges(APIView):
             serializer = ChallengeViewModelSerializer(challenge_view_model)
             # current_challenge = CurrentChallenge(challenge, is_new=True)
             # serializer = CurrentChallengeSerializer(current_challenge)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            errors = validator.errors
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def __get_bad_request(self):
+        output = {"message": "There is a running challenge"}
+        return Response(output, status.HTTP_400_BAD_REQUEST)
+
+
+class IndividualizedChallengesCustomSteps(APIView):
+    def get(self, request, format=None):
+        group = people_helper.get_group(request.user.id)
+        challenge_view_model = ChallengeViewModel(group)
+        serializer = ChallengeViewModelSerializer(challenge_view_model)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        """
+        Create new challenges uniformly for all group members
+        """
+        group = people_helper.get_group(request.user.id)
+        if not GroupChallenge.is_there_a_running_challenge(group) :
+            return self.__get_challenges_from_averages(group, request.data)
+        else:
+            return Response("There's a running challenge",
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    def __get_challenges_from_averages(self, group, data):
+        validator = AverageStepsSerializers(data=data)
+        if validator.is_valid():
+            validated_data = validator.validated_data
+            step_averages = validated_data["step_averages"]  # type: dict(int)
+
+            challenge_view_model = ChallengeViewModel(group, steps_dict=step_averages)
+            serializer = ChallengeViewModelSerializer(challenge_view_model)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            errors = validator.errors
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IndividualizedChallenges(APIView):
+    """
+    GET request returns the status, the available challenges, and the currently
+    running challenges. If status is AVAILABLE, then running is None. If status
+    is RUNNING, then available is None.
+    POST request creates a new challenge individualized for each group member
+    if there are no running challenges.
+    """
+
+    def get(self, request, format=None):
+        group = people_helper.get_group(request.user.id)
+        challenge_view_model = ChallengeViewModel(group)
+        serializer = ChallengeViewModelSerializer(challenge_view_model)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        """
+        Create new challenges uniformly for all group members
+        """
+        group = people_helper.get_group(request.user.id)
+        if GroupChallenge.is_there_a_running_challenge(group) :
+            return self.__get_bad_request()
+        else:
+            return self.__post_a_new_challenge(group, request.data)
+
+    def __get_challenges_from_averages(self, group, data):
+        validator = AverageStepsSerializers(data=data)
+        if validator.is_valid():
+            validated_data = validator.validated_data
+            step_averages = validated_data["step_averages"]  # type: dict(int)
+
+            challenge_view_model = ChallengeViewModel(group, steps_dict=step_averages)
+            serializer = ChallengeViewModelSerializer(challenge_view_model)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            errors = validator.errors
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def __post_a_new_challenge(self, group, data):
+        validator = IndividualizedGroupChallengeSerializer(data=data)
+        if validator.is_valid():
+            validated_data = validator.validated_data
+
+            GroupChallenge.create_individualized(group, validated_data)
+
+            challenge_view_model = ChallengeViewModel(group)
+            serializer = ChallengeViewModelSerializer(challenge_view_model)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             errors = validator.errors

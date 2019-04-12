@@ -28,7 +28,16 @@ class ListOfAvailableChallengestSerializer(serializers.Serializer):
     level_id = serializers.IntegerField()
     level_order = serializers.IntegerField()
     challenges = AvailableChallengeSerializer(many=True)
-    challenges_by_person = serializers.DictField(child=AvailableChallengeListField())
+    challenges_by_person = serializers.DictField(
+        child=AvailableChallengeListField())
+
+
+class IndividualizedGroupChallengeSerializer(serializers.Serializer):
+    total_duration = serializers.CharField(max_length=32)
+    start_datetime_utc = serializers.DateTimeField(required=False)
+    level_id = serializers.IntegerField()
+    challenges_by_person = serializers.DictField(
+        child=AvailableChallengeSerializer())
 
 
 class PersonChallengeSerializer(serializers.ModelSerializer):
@@ -73,3 +82,7 @@ class ChallengeViewModelSerializer(serializers.Serializer):
     available = ListOfAvailableChallengestSerializer()
     running = CurrentChallengeSerializer()
     passed = CurrentChallengeSerializer()
+
+
+class AverageStepsSerializers(serializers.Serializer):
+    step_averages = serializers.DictField(child=serializers.IntegerField())

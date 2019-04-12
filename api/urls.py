@@ -2,7 +2,8 @@ from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from api.views import FirebaseToken
-from challenges.api import Challenges, ChallengeCompletion, Create
+from challenges.api import Challenges, ChallengeCompletion, Create, \
+    IndividualizedChallenges, IndividualizedChallengesCustomSteps
 from fitness.api import UserGroupActivities
 from fitness_connector.api import PersonFitnessDataSync, \
     AllUsersFitnessDataSync, RefreshAllToken
@@ -46,7 +47,6 @@ urlpatterns = [
 
     # Logged Family's: Challenges
     url(r'^group/challenges$', Challenges.as_view()),
-    url(r'^group/challenges2$', Challenges.as_view()),
 
     # Logged Family's: Challenges with average set by the user
     url(r'^group/challenges/steps_average/(?P<steps_average>\d+)/$', Challenges.as_view()),
@@ -57,6 +57,16 @@ urlpatterns = [
     # Logged Family's: Complete the currently running challenges
     url(r'^group/challenges/set_completed$', ChallengeCompletion.as_view()),
     url(r'^group/challenges/set_completed/(?P<override>[\w-]+)/$', ChallengeCompletion.as_view()),
+
+    # Logged Family's: Individualized challenges
+    url(r'^group/challenges/individualized$',
+        IndividualizedChallenges.as_view()),
+    url(r'^group/challenges/individualized/steps_average$',
+        IndividualizedChallengesCustomSteps.as_view()),
+    url(r'^group/challenges/individualized/set_completed$',
+        ChallengeCompletion.as_view()),
+    url(r'^group/challenges/individualized/set_completed/(?P<override>[\w-]+)/$',
+        ChallengeCompletion.as_view()),
 
     # Sync the fitbit data of the person
     # url(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', fitness_connector_views.update, name='update'),
