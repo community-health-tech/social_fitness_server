@@ -11,7 +11,7 @@ admin.site.register(PersonFitnessMilestone)
 class GroupChallengeAdmin(admin.ModelAdmin):
     list_display = ('group', 'duration', 'start_datetime', 'end_datetime', 'completed_datetime', 'level')
     list_display_links = ('group', 'duration')
-    ordering = ('start_datetime', 'end_datetime')
+    ordering = ('-start_datetime', '-end_datetime')
     list_filter = ('level',)
     search_fields = ['group__name']
 
