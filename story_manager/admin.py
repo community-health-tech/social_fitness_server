@@ -3,7 +3,6 @@ from story_manager.models import Category, Story, GroupStory
 
 
 admin.site.register(Category)
-admin.site.register(GroupStory)
 
 
 class StoryAdmin(admin.ModelAdmin):
@@ -14,3 +13,15 @@ class StoryAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Story, StoryAdmin)
+
+
+class GroupStoryAdmin(admin.ModelAdmin):
+    list_display = ('group', 'story')
+    list_display_links = ('group',)
+    ordering = ('group__id', 'story__order',)
+    search_fields = ['group__name', 'story__title']
+
+
+admin.site.register(GroupStory, GroupStoryAdmin)
+
+
