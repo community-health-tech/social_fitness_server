@@ -34,13 +34,6 @@ class Story(models.Model):
     class Meta:
         verbose_name_plural = "stories"
 
-    def __str__(self):
-        if self.category:
-            category_name = self.category.name
-        else:
-            category_name = "Uncategorized"
-        return Story.MEMBERSHIP_STRING.format(self.title, category_name)
-
 
 class GroupStory(models.Model):
     group = models.ForeignKey(Group)
