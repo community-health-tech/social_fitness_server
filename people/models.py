@@ -21,6 +21,7 @@ DEFAULT_PERSON_META_PROFILE_JSON_STRING = "{\"bio\": \"insert bio here\"}"  # ty
 
 class Person(models.Model):
     name = models.CharField(max_length=200)
+    internal_name = models.CharField(max_length=200, default=None)
     birth_date = models.DateField()
     user = models.OneToOneField(User, on_delete=models.CASCADE, default=None,
                                 null=True, blank=True)

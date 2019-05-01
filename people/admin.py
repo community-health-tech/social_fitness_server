@@ -4,8 +4,16 @@ from .models import Group, Membership
 from .models import Circle, CircleMembership
 
 # Register your models here.
-admin.site.register(Person)
+class PersonAdmin(admin.ModelAdmin):
+    list_display = ('name', 'internal_name', 'user')
+    list_display_links = ('name', 'internal_name')
+    search_fields = ['name', 'internal_name', 'user__username']
+
+
+admin.site.register(Person, PersonAdmin)
+
 admin.site.register(Group)
+
 admin.site.register(Circle)
 
 
