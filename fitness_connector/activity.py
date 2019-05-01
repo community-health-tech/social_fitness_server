@@ -88,9 +88,9 @@ class PersonActivity(object):
                 end_time = end_time,
             )
 
-        # self._save_one_day_data(date_string, one_day_data)
+        self._save_one_day_data(date_string, one_day_data)
         self._save_one_day_intraday_data(date_string, one_day_data)
-        self._update_one_day_data(date_string)
+        # self._update_one_day_data(date_string)
 
         # TODO this may introduce bugs
         self.account.last_pull_time = self.device.last_sync_time
@@ -98,24 +98,23 @@ class PersonActivity(object):
         
         return(1)
 
-    # def _save_one_day_data(self, date_string, one_day_data):
-    #     try:
-    #         one_day_activity = ActivityByDay.objects.get(
-    #             date = self._get_tz_aware(date_string),
-    #             person_id=self.account.person_id
-    #         )
-    #     except ActivityByDay.DoesNotExist:
-    #         one_day_activity = ActivityByDay(
-    #             date = self._get_tz_aware(date_string),
-    #             person_id = self.account.person_id
-    #         )
-    #
-    #     one_day_activity.steps += one_day_data[RES_ID_STEPS]["activities-steps"][0]["value"]
-    #     one_day_activity.calories += one_day_data[RES_ID_CALORIES]["activities-calories"][0]["value"]
-    #     one_day_activity.active_minutes += 0
-    #     one_day_activity.distance += one_day_data[RES_ID_DISTANCE]["activities-distance"][0]["value"]
-    #
-    #     one_day_activity.save()
+    def _save_one_day_data(self, date_string, one_day_data):
+         try:
+             one_day_activity = ActivityByDay.objects.get(
+                 date = self._get_tz_aware(date_string),
+                 person_id=self.account.person_id
+             )
+         except ActivityByDay.DoesNotExist:
+             one_day_activity = ActivityByDay(
+                 date = self._get_tz_aware(date_string),
+                 person_id = self.account.person_id
+             )
+
+         one_day_activity.steps += one_day_data[RES_ID_STEPS]["activities-steps"][0]["value"]
+         one_day_activity.calories += one_day_data[RES_ID_CALORIES]["activities-calories"][0]["value"]
+         one_day_activity.active_minutes += 0
+         one_day_activity.distance += one_day_data[RES_ID_DISTANCE]["activities-distance"][0]["value"]
+         one_day_activity.save()
 
     def _save_one_day_intraday_data(self, date_string, one_day_data):
         step_data = self._get_dataset(one_day_data, RES_ID_STEPS, KEY_INTRA_STEPS)
