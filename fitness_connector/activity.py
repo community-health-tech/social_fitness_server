@@ -146,25 +146,32 @@ class PersonActivity(object):
             .filter(person_id=self.account.person_id, date=date_tz_aware)\
             .aggregate(total_steps=Sum('steps'),
                        total_calories=Sum('calories'),
-                       total_minutes=Sum('time'),
                        total_distance=Sum('distance'))
 
         one_day_activity.steps = one_day_aggregate['total_steps']
         one_day_activity.calories = one_day_aggregate['total_calories']
-        one_day_activity.active_minutes = one_day_aggregate['total_minutes']
+        one_day_activity.active_minutes = 0
         one_day_activity.distance = one_day_aggregate['total_distance']
         one_day_activity.save()
 
     def _get_activity_1m(self, activity_date, steps, calories, distance):
-        activity = ActivityByMinute (
-            date = self._get_tz_aware(activity_date),
-            time = self._get_tz_aware(steps["time"]),
-            steps = steps["value"],
-            calories = calories["value"],
-            level = calories["level"],
-            distance = distance["value"],
-            person_id = self.account.person_id
-        )
+        try:
+            activity = ActivityByMinute.objects.get(
+                date = self._get_tz_aware(activity_date),
+                time = self._get_tz_aware(steps["time"]),
+                person_id=self.account.person_id
+            )
+        except ActivityByMinute.DoesNotExist:
+            activity = ActivityByMinute(
+                date=self._get_tz_aware(activity_date),
+                time=self._get_tz_aware(steps["time"]),
+                person_id=self.account.person_id
+            )
+
+        activity.steps = steps["value"]
+        activity.calories = calories["value"]
+        activity.level = calories["level"]
+        activity.distance = distance["value"]
         return activity
         
     def _refresh_cb(self, token):
