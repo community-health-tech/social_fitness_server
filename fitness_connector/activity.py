@@ -155,19 +155,11 @@ class PersonActivity(object):
         one_day_activity.save()
 
     def _get_activity_1m(self, activity_date, steps, calories, distance):
-        try:
-            activity = ActivityByMinute.objects.get(
-                date = self._get_tz_aware(activity_date),
-                time = self._get_tz_aware(steps["time"]),
-                person_id=self.account.person_id
-            )
-        except ActivityByMinute.DoesNotExist:
-            activity = ActivityByMinute(
-                date=self._get_tz_aware(activity_date),
-                time=self._get_tz_aware(steps["time"]),
-                person_id=self.account.person_id
-            )
-
+        activity = ActivityByMinute(
+            date=self._get_tz_aware(activity_date),
+            time=self._get_tz_aware(steps["time"]),
+            person_id=self.account.person_id
+        )
         activity.steps = steps["value"]
         activity.calories = calories["value"]
         activity.level = calories["level"]
@@ -193,7 +185,7 @@ class PersonActivity(object):
         for date in rrule(DAILY, dtstart=start_datetime, until=end_datetime):
             dates.append({
                 'date': date.strftime("%Y-%m-%d"),
-                'start_time': TIME_START_OF_DAY,
+                'start_time': date.strftime("%H:%M"),
                 'end_time': TIME_END_OF_DAY
             })
 
