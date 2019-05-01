@@ -110,10 +110,10 @@ class PersonActivity(object):
                  person_id = self.account.person_id
              )
 
-         one_day_activity.steps += one_day_data[RES_ID_STEPS]["activities-steps"][0]["value"]
-         one_day_activity.calories += one_day_data[RES_ID_CALORIES]["activities-calories"][0]["value"]
-         one_day_activity.active_minutes += 0
-         one_day_activity.distance += one_day_data[RES_ID_DISTANCE]["activities-distance"][0]["value"]
+         one_day_activity.steps = one_day_data[RES_ID_STEPS]["activities-steps"][0]["value"]
+         one_day_activity.calories = one_day_data[RES_ID_CALORIES]["activities-calories"][0]["value"]
+         one_day_activity.active_minutes = 0
+         one_day_activity.distance = one_day_data[RES_ID_DISTANCE]["activities-distance"][0]["value"]
          one_day_activity.save()
 
     def _save_one_day_intraday_data(self, date_string, one_day_data):
@@ -143,6 +143,7 @@ class PersonActivity(object):
 
         one_day_aggregate = ActivityByMinute.objects\
             .filter(person_id=self.account.person_id, date=date_tz_aware)\
+            .distinct('date', 'time', 'person_id')\
             .aggregate(total_steps=Sum('steps'),
                        total_calories=Sum('calories'),
                        total_distance=Sum('distance'))
