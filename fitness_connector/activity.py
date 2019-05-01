@@ -98,7 +98,7 @@ class PersonActivity(object):
         
         return(1)
 
-    # def _save_one_day_data(self, date_string, one_day_data): 
+    # def _save_one_day_data(self, date_string, one_day_data):
     #     try:
     #         one_day_activity = ActivityByDay.objects.get(
     #             date = self._get_tz_aware(date_string),
@@ -146,8 +146,8 @@ class PersonActivity(object):
             .filter(person_id=self.account.person_id, date=date_tz_aware)\
             .aggregate(total_steps=Sum('steps'),
                        total_calories=Sum('calories'),
-                       total_minutes=Sum('active_minutes'),
-                       total_distance=Sum('active_minutes'))
+                       total_minutes=Sum('time'),
+                       total_distance=Sum('distance'))
 
         one_day_activity.steps = one_day_aggregate['total_steps']
         one_day_activity.calories = one_day_aggregate['total_calories']
