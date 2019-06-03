@@ -7,7 +7,7 @@ admin.site.register(Category)
 
 class StoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'order', 'category')
-    list_display_links = ('title',)
+    list_display_links = ('id', 'title',)
     list_filter = ('category__name',)
     ordering = ('category__id', 'order')
 
