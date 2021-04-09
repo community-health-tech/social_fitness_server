@@ -11,6 +11,8 @@ pip install mysql-connector-python-rf
 pip install mysqlclient
 pip install django
 pip install djangorestframework
+pip install djangorestframework-camel-case
+pip install django-oauth-toolkit djangorestframework
 pip install fitbit
 python manage.py migrate
 python manage.py runserver

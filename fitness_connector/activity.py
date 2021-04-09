@@ -1,6 +1,7 @@
 from datetime import timedelta
 from dateutil import parser
 from dateutil.rrule import rrule, DAILY
+from django.db.models import Sum
 from django.utils import timezone
 from fitbit.api import Fitbit
 from fitness.models import ActivityByMinute, ActivityByDay
@@ -89,31 +90,31 @@ class PersonActivity(object):
 
         self._save_one_day_data(date_string, one_day_data)
         self._save_one_day_intraday_data(date_string, one_day_data)
+        # self._update_one_day_data(date_string)
 
-        #TODO this may introduce bugs
+        # TODO this may introduce bugs
         self.account.last_pull_time = self.device.last_sync_time
         self.account.save()
         
         return(1)
 
     def _save_one_day_data(self, date_string, one_day_data):
-        try:
-            one_day_activity = ActivityByDay.objects.get(
-                date = self._get_tz_aware(date_string),
-                person_id=self.account.person_id
-            )
-        except ActivityByDay.DoesNotExist:
-            one_day_activity = ActivityByDay(
-                date = self._get_tz_aware(date_string),
-                person_id = self.account.person_id
-            )
+         try:
+             one_day_activity = ActivityByDay.objects.get(
+                 date = self._get_tz_aware(date_string),
+                 person_id=self.account.person_id
+             )
+         except ActivityByDay.DoesNotExist:
+             one_day_activity = ActivityByDay(
+                 date = self._get_tz_aware(date_string),
+                 person_id = self.account.person_id
+             )
 
-        one_day_activity.steps = one_day_data[RES_ID_STEPS]["activities-steps"][0]["value"]
-        one_day_activity.calories = one_day_data[RES_ID_CALORIES]["activities-calories"][0]["value"]
-        one_day_activity.active_minutes = 0
-        one_day_activity.distance = one_day_data[RES_ID_DISTANCE]["activities-distance"][0]["value"]
-
-        one_day_activity.save()
+         one_day_activity.steps = one_day_data[RES_ID_STEPS]["activities-steps"][0]["value"]
+         one_day_activity.calories = one_day_data[RES_ID_CALORIES]["activities-calories"][0]["value"]
+         one_day_activity.active_minutes = 0
+         one_day_activity.distance = one_day_data[RES_ID_DISTANCE]["activities-distance"][0]["value"]
+         one_day_activity.save()
 
     def _save_one_day_intraday_data(self, date_string, one_day_data):
         step_data = self._get_dataset(one_day_data, RES_ID_STEPS, KEY_INTRA_STEPS)
@@ -127,16 +128,42 @@ class PersonActivity(object):
 
         ActivityByMinute.objects.bulk_create(activities_1m_in_1d)
 
+    def _update_one_day_data(self, date_string):
+        date_tz_aware = self._get_tz_aware(date_string)
+        try:
+            one_day_activity = ActivityByDay.objects.get(
+                date = date_tz_aware,
+                person_id=self.account.person_id
+            )
+        except ActivityByDay.DoesNotExist:
+            one_day_activity = ActivityByDay(
+                date = date_tz_aware,
+                person_id = self.account.person_id
+            )
+
+        one_day_aggregate = ActivityByMinute.objects\
+            .filter(person_id=self.account.person_id, date=date_tz_aware)\
+            .distinct('date', 'time', 'person_id')\
+            .aggregate(total_steps=Sum('steps'),
+                       total_calories=Sum('calories'),
+                       total_distance=Sum('distance'))
+
+        one_day_activity.steps = one_day_aggregate['total_steps']
+        one_day_activity.calories = one_day_aggregate['total_calories']
+        one_day_activity.active_minutes = 0
+        one_day_activity.distance = one_day_aggregate['total_distance']
+        one_day_activity.save()
+
     def _get_activity_1m(self, activity_date, steps, calories, distance):
-        activity = ActivityByMinute (
-            date = self._get_tz_aware(activity_date),
-            time = self._get_tz_aware(steps["time"]),
-            steps = steps["value"],
-            calories = calories["value"],
-            level = calories["level"],
-            distance = distance["value"],
-            person_id = self.account.person_id
+        activity = ActivityByMinute(
+            date=self._get_tz_aware(activity_date),
+            time=self._get_tz_aware(steps["time"]),
+            person_id=self.account.person_id
         )
+        activity.steps = steps["value"]
+        activity.calories = calories["value"]
+        activity.level = calories["level"]
+        activity.distance = distance["value"]
         return activity
         
     def _refresh_cb(self, token):
@@ -158,7 +185,7 @@ class PersonActivity(object):
         for date in rrule(DAILY, dtstart=start_datetime, until=end_datetime):
             dates.append({
                 'date': date.strftime("%Y-%m-%d"),
-                'start_time': TIME_START_OF_DAY,
+                'start_time': date.strftime("%H:%M"),
                 'end_time': TIME_END_OF_DAY
             })
 

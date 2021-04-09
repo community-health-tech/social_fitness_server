@@ -1,0 +1,5 @@
+[
+  {"model": "challenges.levelgroup", "pk": 1, "fields": {"name": "Precontemplators"}},
+  {"model": "challenges.levelgroup", "pk": 2, "fields": {"name": "Contemplator or Preparation"}},
+  {"model": "challenges.levelgroup", "pk": 3, "fields": {"name": "Action or Maintenance"}}
+]
