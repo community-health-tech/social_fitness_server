@@ -13,15 +13,15 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import include, url
+from django.urls import path, include, re_path
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import routers, serializers, viewsets
 
 urlpatterns = [
-	url(r'^fitbit/', include('fitness_connector.urls')),
-    url(r'^admin/', admin.site.urls),
-    url(r'^api/', include('api.urls')),
-    url(r'^oauth/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('fitbit/', include('fitness_connector.urls')),
+    path('admin/', admin.site.urls),
+    path('api/', include('api.urls')),
+    path('oauth/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
