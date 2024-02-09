@@ -1,4 +1,4 @@
-from django.conf.urls import url, include
+from django.urls import path, re_path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from api.views import FirebaseToken
@@ -14,65 +14,65 @@ from story_manager.api import UserStory, UserStoryList
 urlpatterns = [
     # REST FRAMEWORK
     # User Authentication
-    url(r'', include('rest_framework.urls', namespace='rest_framework')),
+    path(r'', include('rest_framework.urls', namespace='rest_framework')),
 
     # LOGGED USER'S VIEWS
     # Logged User's details
-    url(r'^user/$', UserInfo.as_view()),
+    path(r'^user/$', UserInfo.as_view()),
 
     # Logged User's Person info
-    url(r'^person/info/$', UserInfo.as_view()),
-    url(r'^person/(?P<person_id>[0-9]+|-)/$', PersonInfo.as_view()),
+    path(r'^person/info/$', UserInfo.as_view()),
+    re_path(r'^person/(?P<person_id>[0-9]+|-)/$', PersonInfo.as_view()),
 
     # Logged User's: Get and set a person's metadata
-    url(r'^person/(?P<person_id>[0-9]+)/meta/profile/$', PersonProfileInfo.as_view()),
+    re_path(r'^person/(?P<person_id>[0-9]+)/meta/profile/$', PersonProfileInfo.as_view()),
 
     # Logged Family's details
-    url(r'^group/info/$', UserGroupInfo.as_view()),
+    path(r'^group/info/$', UserGroupInfo.as_view()),
 
     # Logged Family's circle
-    url(r'^circle/(?P<circle_id>[0-9]+)/$', UserCircleInfo.as_view()),
-    url(r'^circle/all/$', UserCircleListInfo.as_view()),
+    re_path(r'^circle/(?P<circle_id>[0-9]+)/$', UserCircleInfo.as_view()),
+    path(r'^circle/all/$', UserCircleListInfo.as_view()),
 
     # Logged Family's Activities in 7 days
-    url(r'^group/activities/7d/'
+    re_path(r'^group/activities/7d/'
         r'(?P<start_date_string>\d{4}-\d{2}-\d{2})$',
         UserGroupActivities.as_view()),
 
     # Logged Family's: All Stories
-    url(r'^group/stories/all$', UserStoryList.as_view()),
+    path(r'^group/stories/all$', UserStoryList.as_view()),
 
     # Logged Family's: Specific Story
-    url(r'^group/stories/(?P<story_id>[0-9]+)/$', UserStory.as_view()),
+    re_path(r'^group/stories/(?P<story_id>[0-9]+)/$', UserStory.as_view()),
 
     # Logged Family's: Challenges
-    url(r'^group/challenges$', Challenges.as_view()),
+    path(r'^group/challenges$', Challenges.as_view()),
 
     # Logged Family's: Challenges with average set by the user
-    url(r'^group/challenges/steps_average/(?P<steps_average>\d+)/$', Challenges.as_view()),
+    re_path(r'^group/challenges/steps_average/(?P<steps_average>\d+)/$', Challenges.as_view()),
 
     # Logged Family's: create a new challenge from available challenges
-    url(r'^group/challenges/create$', Create.as_view()),
+    path(r'^group/challenges/create$', Create.as_view()),
 
     # Logged Family's: Complete the currently running challenges
-    url(r'^group/challenges/set_completed$', ChallengeCompletion.as_view()),
-    url(r'^group/challenges/set_completed/(?P<override>[\w-]+)/$', ChallengeCompletion.as_view()),
+    path(r'^group/challenges/set_completed$', ChallengeCompletion.as_view()),
+    re_path(r'^group/challenges/set_completed/(?P<override>[\w-]+)/$', ChallengeCompletion.as_view()),
 
     # Logged Family's: Individualized challenges
-    url(r'^group/challenges/individualized$',
+    path(r'^group/challenges/individualized$',
         IndividualizedChallenges.as_view()),
-    url(r'^group/challenges/individualized/steps_average$',
+    path(r'^group/challenges/individualized/steps_average$',
         IndividualizedChallengesCustomSteps.as_view()),
-    url(r'^group/challenges/individualized/set_completed$',
+    path(r'^group/challenges/individualized/set_completed$',
         ChallengeCompletion.as_view()),
-    url(r'^group/challenges/individualized/set_completed/(?P<override>[\w-]+)/$',
+    re_path(r'^group/challenges/individualized/set_completed/(?P<override>[\w-]+)/$',
         ChallengeCompletion.as_view()),
 
     # Sync the fitbit data of the person
     # url(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', fitness_connector_views.update, name='update'),
-    url(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', PersonFitnessDataSync.as_view()),
-    url(r'^fitbit/update/all$', AllUsersFitnessDataSync.as_view()),
-    url(r'^fitbit/token/update/all$', RefreshAllToken.as_view()),
+    re_path(r'^fitbit/update/person/(?P<person_id>[0-9]+)/$', PersonFitnessDataSync.as_view()),
+    path(r'^fitbit/update/all$', AllUsersFitnessDataSync.as_view()),
+    path(r'^fitbit/token/update/all$', RefreshAllToken.as_view()),
 
     # Logged Family's: Challenges
     # url(r'^group/challenges2$', Challenges.as_view()),
@@ -87,7 +87,7 @@ urlpatterns = [
     # url(r'^group/challenges/current$', Current.as_view()),
 
     # Logged Family's: get a Firebase token
-    url(r'^firebase/get_token$', FirebaseToken.as_view()),
+    path(r'^firebase/get_token$', FirebaseToken.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

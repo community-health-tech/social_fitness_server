@@ -43,8 +43,8 @@ class Story(models.Model):
 
 
 class GroupStory(models.Model):
-    group = models.ForeignKey(Group)
-    story = models.ForeignKey(Story)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)  # Adjust as needed
+    story = models.ForeignKey(Story, on_delete=models.CASCADE)  # Adjust as needed
     is_current = models.BooleanField()
     current_page = models.PositiveIntegerField(default=0)
 
@@ -57,7 +57,6 @@ class GroupStory(models.Model):
         else:
             category_name = "Uncategorized"
         return GROUPSTORY_ADMIN_STRING.format(self.group.name, self.story.title, category_name)
-
 
 # Standard Classes
 

@@ -11,7 +11,8 @@ class Account(models.Model):
     access_token = models.CharField(max_length=1000)
     refresh_token = models.CharField(max_length=1000)
     expires_at = models.DateTimeField(blank=True, null=True)
-    person = models.ForeignKey(Person, blank=True, null=True)
+    # Other options include models.SET_NULL, models.PROTECT depending on how deletions should be handled.
+    person = models.ForeignKey(Person, on_delete=models.SET_NULL, blank=True, null=True)
     last_pull_time = models.DateTimeField(blank=True, null=True, default=DEFAULT_START_DATE)
     device_version = models.CharField(max_length=64)
     

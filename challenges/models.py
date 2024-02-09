@@ -119,12 +119,14 @@ class Level(models.Model):
 class GroupChallenge(models.Model):
     MEMBERSHIP_STRING = "{0}'s {1} challenge ({2} - {3})"
 
-    group = models.ForeignKey(Group, blank=False)
+    # Other options include models.SET_NULL, models.PROTECT depending on how deletions should be handled.
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=False)
     duration = models.CharField(max_length=16, choices=Duration, blank=False)
     start_datetime = models.DateTimeField(blank=False)
     end_datetime = models.DateTimeField(blank=False)
     completed_datetime = models.DateTimeField(blank=True, null=True)
-    level = models.ForeignKey(Level, blank=False)
+    # CONFIRM CASCADE IS THE APROPIATE CHANGE
+    level = models.ForeignKey(Level, on_delete=models.CASCADE, blank=False)
 
     class Meta:
         get_latest_by = "end_datetime"
@@ -323,9 +325,9 @@ class GroupChallenge(models.Model):
 class PersonChallenge(models.Model):
     MEMBERSHIP_STRING = "{0}'s {1} challenge, {2} {3} per {4} ({5} - {6})"
 
-    person = models.ForeignKey(Person, blank=False)
-    group_challenge = models.ForeignKey(GroupChallenge, blank=False)
-    level = models.ForeignKey(Level, blank=False)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, blank=False)
+    group_challenge = models.ForeignKey(GroupChallenge, on_delete=models.CASCADE, blank=False)
+    level = models.ForeignKey(Level, on_delete=models.CASCADE, blank=False)
 
     unit = models.CharField(max_length=32, choices=Unit, blank=False)
     unit_goal = models.IntegerField(blank=False)
@@ -372,7 +374,7 @@ class PersonChallenge(models.Model):
 class PersonFitnessMilestone(models.Model):
     MEMBERSHIP_STRING = "{0}'s milestone ({1} to {2})"
 
-    person = models.ForeignKey(Person, blank=False)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, blank=False)
     start_datetime = models.DateTimeField(blank=False)
     end_datetime = models.DateTimeField(blank=False)
     steps = models.IntegerField()
@@ -381,7 +383,7 @@ class PersonFitnessMilestone(models.Model):
     active_minutes_moderate = models.IntegerField()
     active_minutes_vigorous = models.IntegerField()
     distance = models.FloatField()
-    level_group = models.ForeignKey(LevelGroup, blank=False, default=1)
+    level_group = models.ForeignKey(LevelGroup, on_delete=models.CASCADE, blank=False, default=1)
 
     class Meta:
         get_latest_by = "end_datetime"
