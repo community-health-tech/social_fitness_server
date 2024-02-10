@@ -43,6 +43,7 @@ class Story(models.Model):
 
 
 class GroupStory(models.Model):
+    # Other options include models.SET_NULL, models.PROTECT depending on how deletions should be handled.
     group = models.ForeignKey(Group, on_delete=models.CASCADE)  # Adjust as needed
     story = models.ForeignKey(Story, on_delete=models.CASCADE)  # Adjust as needed
     is_current = models.BooleanField()

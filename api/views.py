@@ -1,6 +1,7 @@
 import firebase_admin
 import time
 from django.http import Http404
+from api.settings import CRED_PATH
 from firebase_admin import auth
 from firebase_admin import credentials
 from rest_framework import permissions
