@@ -8,6 +8,14 @@ from fitness.models import ActivityByMinute, ActivityByDay
 from fitness_connector.device import Device
 from fitness_connector.models import Account
 from fitness_connector import settings as fitbit_settings
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+# REPLACE WITH NEW FIREBASE DATA
+cred = credentials.Certificate("C:\\Users\\Bruce\\OneDrive\\Documents\\GitHub\\social-fitness-test-18338-firebase-adminsdk-920re-10b7c718c3.json")
+firebase_admin.initialize_app(cred, {'databaseURL': 'https://social-fitness-test-18338.firebaseio.com/'})
+db = firestore.client()
+
 
 RES_ID_STEPS = "activities/steps"
 RES_ID_CALORIES = "activities/calories"
@@ -97,36 +105,65 @@ class PersonActivity(object):
         self.account.save()
         
         return(1)
+    # WORK
+    def _save_one_day_data_to_firebase(self, date_string, one_day_data):
+        year_month = date_string[:7]  # Extract YYYY-MM
+        day = date_string[-2:]  # Extract DD
+        ref = db.reference(f'activity_by_day/{self.account.person_id}/{year_month}/{day}')
+        data = {
+            'steps': one_day_data[RES_ID_STEPS]["activities-steps"][0]["value"],
+            'calories': one_day_data[RES_ID_CALORIES]["activities-calories"][0]["value"],
+            'distance': one_day_data[RES_ID_DISTANCE]["activities-distance"][0]["value"]
+        
+    }
+        ref.set(data)
 
-    def _save_one_day_data(self, date_string, one_day_data):
-         try:
-             one_day_activity = ActivityByDay.objects.get(
-                 date = self._get_tz_aware(date_string),
-                 person_id=self.account.person_id
-             )
-         except ActivityByDay.DoesNotExist:
-             one_day_activity = ActivityByDay(
-                 date = self._get_tz_aware(date_string),
-                 person_id = self.account.person_id
-             )
-
-         one_day_activity.steps = one_day_data[RES_ID_STEPS]["activities-steps"][0]["value"]
-         one_day_activity.calories = one_day_data[RES_ID_CALORIES]["activities-calories"][0]["value"]
-         one_day_activity.active_minutes = 0
-         one_day_activity.distance = one_day_data[RES_ID_DISTANCE]["activities-distance"][0]["value"]
-         one_day_activity.save()
-
-    def _save_one_day_intraday_data(self, date_string, one_day_data):
+    def _save_one_day_intraday_data_to_firebase(self, date_string, one_day_data):
+        year_month = date_string[:7]  # Extract YYYY-MM
+        day = date_string[-2:]  # Extract DD
         step_data = self._get_dataset(one_day_data, RES_ID_STEPS, KEY_INTRA_STEPS)
         calorie_data = self._get_dataset(one_day_data, RES_ID_CALORIES, KEY_INTRA_CALORIES)
         distance_data = self._get_dataset(one_day_data, RES_ID_DISTANCE, KEY_INTRA_DISTANCE)
+        
+        for time, steps, cals, dist in zip(step_data["dataset"], calorie_data["dataset"], distance_data["dataset"]):
+            hour_minute = time["time"]  # Assuming this gives HH:mm
+            ref = db.reference(f'activity_by_minute/{self.account.person_id}/{year_month}/{day}/{hour_minute}')
+            data = {
+                'steps': steps["value"],
+                'calories': cals["value"],
+                'distance': dist["value"]
+        }
+            ref.set(data)
 
-        activities_1m_in_1d = list()
-        for steps, cals, dist in zip(step_data, calorie_data, distance_data):
-            activity_1m = self._get_activity_1m(date_string, steps, cals, dist)
-            activities_1m_in_1d.append(activity_1m)
+    # def _save_one_day_data(self, date_string, one_day_data):
+    #      try:
+    #          one_day_activity = ActivityByDay.objects.get(
+    #              date = self._get_tz_aware(date_string),
+    #              person_id=self.account.person_id
+    #          )
+    #      except ActivityByDay.DoesNotExist:
+    #          one_day_activity = ActivityByDay(
+    #              date = self._get_tz_aware(date_string),
+    #              person_id = self.account.person_id
+    #          )
 
-        ActivityByMinute.objects.bulk_create(activities_1m_in_1d)
+    #      one_day_activity.steps = one_day_data[RES_ID_STEPS]["activities-steps"][0]["value"]
+    #      one_day_activity.calories = one_day_data[RES_ID_CALORIES]["activities-calories"][0]["value"]
+    #      one_day_activity.active_minutes = 0
+    #      one_day_activity.distance = one_day_data[RES_ID_DISTANCE]["activities-distance"][0]["value"]
+    #      one_day_activity.save()
+
+    # def _save_one_day_intraday_data(self, date_string, one_day_data):
+    #     step_data = self._get_dataset(one_day_data, RES_ID_STEPS, KEY_INTRA_STEPS)
+    #     calorie_data = self._get_dataset(one_day_data, RES_ID_CALORIES, KEY_INTRA_CALORIES)
+    #     distance_data = self._get_dataset(one_day_data, RES_ID_DISTANCE, KEY_INTRA_DISTANCE)
+
+    #     activities_1m_in_1d = list()
+    #     for steps, cals, dist in zip(step_data, calorie_data, distance_data):
+    #         activity_1m = self._get_activity_1m(date_string, steps, cals, dist)
+    #         activities_1m_in_1d.append(activity_1m)
+
+    #     ActivityByMinute.objects.bulk_create(activities_1m_in_1d)
 
     def _update_one_day_data(self, date_string):
         date_tz_aware = self._get_tz_aware(date_string)

@@ -25,7 +25,7 @@ SECRET_KEY = '9)))$=x^-mv-qd1pd_$k6)2ltwhvr*3g)9s$dwqc(ycljxc(&z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [u'wellness.ccs.neu.edu', u'wellness-test.ccs.neu.edu']
+ALLOWED_HOSTS = [u'wellness.ccs.neu.edu', u'127.0.0.1']
 
 
 # Application definition
