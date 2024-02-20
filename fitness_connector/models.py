@@ -33,4 +33,4 @@ class Account(models.Model):
         """
         Return token's expiration time in Unix time
         """
-        return self.expires_at.strftime("%s")
+        return int(self.expires_at.timestamp())

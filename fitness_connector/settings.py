@@ -8,7 +8,13 @@ https://docs.djangoproject.com/en/1.11/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
+
 """
+
+CLIENT_ID = "228Z46"
+CLIENT_SECRET = "1218e7d982584d2490540fa1c0803c2d"
+REDIRECT_URI = "https://northeastern.edu/fitbit/oauth/authorize/"
+TIMEOUT = 3600
 
 import os
 

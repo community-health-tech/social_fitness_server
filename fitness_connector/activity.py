@@ -11,7 +11,8 @@ from fitness_connector import settings as fitbit_settings
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# REPLACE WITH NEW FIREBASE DATA
+# REPLACE WITH NEW FIREBASE DATA - USE SEPARATE FILE
+# TODO MAKE THIS AS A SINGLETON
 cred = credentials.Certificate("C:\\Users\\Bruce\\OneDrive\\Documents\\GitHub\\social-fitness-test-18338-firebase-adminsdk-920re-10b7c718c3.json")
 firebase_admin.initialize_app(cred, {'databaseURL': 'https://social-fitness-test-18338.firebaseio.com/'})
 db = firestore.client()
