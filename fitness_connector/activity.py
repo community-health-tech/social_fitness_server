@@ -219,6 +219,10 @@ class PersonActivity(object):
         :return: a list of dates to pull
         INVARIANT: start_datetime is always before end_datetime
         """
+        # TODO FIX - Create a new variable and convert the data into timezone aware
+        # Update comments that indicate that the end_datetime must not be timezone aware
+        # Research rrule
+        
         dates = list()
         for date in rrule(DAILY, dtstart=start_datetime, until=end_datetime):
             dates.append({

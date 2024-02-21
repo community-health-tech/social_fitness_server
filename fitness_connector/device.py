@@ -15,8 +15,11 @@ class Device:
         fitbit_device = filter(
             lambda x: x["deviceVersion"] == device_version,
             fitbit.get_devices())
-        fitbit_device = list(fitbit_device)[0]
-        return fitbit_device
+        fitbit_devices_list = list(fitbit_device)
+
+        if not fitbit_devices_list:
+            raise ValueError(f"No Fitbit device found matching version: {device_version}")
+        return fitbit_devices_list[0]
         
     @staticmethod
     def get_datetime(datetime_string):
