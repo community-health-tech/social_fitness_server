@@ -1,4 +1,5 @@
 from datetime import timedelta
+from dateutil.tz import UTC
 from dateutil import parser
 from dateutil.rrule import rrule, DAILY
 from django.db.models import Sum
@@ -107,34 +108,34 @@ class PersonActivity(object):
         
         return(1)
     # WORK
-    def _save_one_day_data_to_firebase(self, date_string, one_day_data):
+    def _save_one_day_data(self, date_string, one_day_data):
         year_month = date_string[:7]  # Extract YYYY-MM
         day = date_string[-2:]  # Extract DD
-        ref = db.reference(f'activity_by_day/{self.account.person_id}/{year_month}/{day}')
+        # Correct path for Firestore
+        doc_ref = db.collection(f'activity_by_day/{self.account.person_id}/{year_month}').document(day)
         data = {
             'steps': one_day_data[RES_ID_STEPS]["activities-steps"][0]["value"],
             'calories': one_day_data[RES_ID_CALORIES]["activities-calories"][0]["value"],
             'distance': one_day_data[RES_ID_DISTANCE]["activities-distance"][0]["value"]
-        
-    }
-        ref.set(data)
+            }
+        doc_ref.set(data)
 
-    def _save_one_day_intraday_data_to_firebase(self, date_string, one_day_data):
+    def _save_one_day_intraday_data(self, date_string, one_day_data):
         year_month = date_string[:7]  # Extract YYYY-MM
         day = date_string[-2:]  # Extract DD
         step_data = self._get_dataset(one_day_data, RES_ID_STEPS, KEY_INTRA_STEPS)
         calorie_data = self._get_dataset(one_day_data, RES_ID_CALORIES, KEY_INTRA_CALORIES)
         distance_data = self._get_dataset(one_day_data, RES_ID_DISTANCE, KEY_INTRA_DISTANCE)
         
-        for time, steps, cals, dist in zip(step_data["dataset"], calorie_data["dataset"], distance_data["dataset"]):
-            hour_minute = time["time"]  # Assuming this gives HH:mm
-            ref = db.reference(f'activity_by_minute/{self.account.person_id}/{year_month}/{day}/{hour_minute}')
+        for step_entry, calorie_entry, distance_entry in zip(step_data, calorie_data, distance_data):
+            hour_minute = step_entry["time"]  # Adjusted assuming direct list of entries
             data = {
-                'steps': steps["value"],
-                'calories': cals["value"],
-                'distance': dist["value"]
-        }
-            ref.set(data)
+                'steps': step_entry["value"],
+                'calories': calorie_entry["value"],
+                'distance': distance_entry["value"]
+                }
+            doc_ref = db.collection('activity_by_minute').document(f'{self.account.person_id}').collection(f'{year_month}').document(f'{day}').collection('times').document(f'{hour_minute}')
+            doc_ref.set(data)
 
     # def _save_one_day_data(self, date_string, one_day_data):
     #      try:
@@ -218,21 +219,33 @@ class PersonActivity(object):
         :param end_datetime: the end datetime to pull
         :return: a list of dates to pull
         INVARIANT: start_datetime is always before end_datetime
+        Generate a list of dates between start_datetime and end_datetime with daily granularity.
+        Ensures both start_datetime and end_datetime are in UTC if start_datetime is timezone-aware.
         """
-        # TODO FIX - Create a new variable and convert the data into timezone aware
         # Update comments that indicate that the end_datetime must not be timezone aware
-        # Research rrule
         
-        dates = list()
-        for date in rrule(DAILY, dtstart=start_datetime, until=end_datetime):
+        # Ensure both start_datetime and end_datetime are explicitly in UTC if start_datetime is timezone-aware
+        if start_datetime.tzinfo is not None and start_datetime.tzinfo.utcoffset(start_datetime) is not None:
+            # Convert both to UTC explicitly, ensuring timezone awareness
+            start_datetime_utc = start_datetime.astimezone(UTC)
+            end_datetime_utc = end_datetime.astimezone(UTC)
+        else:
+            # Assume both are already in UTC or timezone-naive (the latter should not be the case for timezone-aware processing)
+            start_datetime_utc = start_datetime
+            end_datetime_utc = end_datetime
+
+        dates = []
+        for date in rrule(DAILY, dtstart=start_datetime_utc, until=end_datetime_utc):
             dates.append({
                 'date': date.strftime("%Y-%m-%d"),
                 'start_time': date.strftime("%H:%M"),
                 'end_time': TIME_END_OF_DAY
             })
 
-        dates[0]['start_time'] = PersonActivity._get_hour_mins(start_datetime) if len(dates) > 1 else TIME_START_OF_DAY
-        dates[len(dates) - 1]['end_time'] = PersonActivity._get_hour_mins(end_datetime)
+        # Adjust the start and end time for the first and last dates, if necessary
+        if dates:
+            dates[0]['start_time'] = PersonActivity._get_hour_mins(start_datetime) if len(dates) > 1 else TIME_START_OF_DAY
+            dates[-1]['end_time'] = PersonActivity._get_hour_mins(end_datetime)
 
         return dates
 
