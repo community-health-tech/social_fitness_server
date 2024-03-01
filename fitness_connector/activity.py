@@ -107,35 +107,76 @@ class PersonActivity(object):
         self.account.save()
         
         return(1)
-    # WORK
+    
     def _save_one_day_data(self, date_string, one_day_data):
-        year_month = date_string[:7]  # Extract YYYY-MM
-        day = date_string[-2:]  # Extract DD
-        # Correct path for Firestore
-        doc_ref = db.collection(f'activity_by_day/{self.account.person_id}/{year_month}').document(day)
+        year = date_string[:4]  # Extract YYYY
+        month = date_string[5:7]  # Extract MM
+        day = date_string[8:10]  # Extract DD
+
+        # Convert person_id to a string to ensure compatibility with Firestore paths
+        person_id_str = str(self.account.person_id)
+
+        # Adjusted path with 'person_daily_fitness' as the top-level collection:
+        # "person_daily_fitness/<user_id>/years/<year>/months/<month>/days/<day>"
+        # This structure implies: person_daily_fitness collection -> user document -> years subcollection
+        # -> year document -> months subcollection -> month document -> days subcollection -> day document
+        day_doc_ref = db.collection('person_daily_fitness').document(person_id_str) \
+                        .collection('years').document(year) \
+                        .collection('months').document(month) \
+                        .collection('days').document(day)
+
+        # Prepare the data to be saved
         data = {
             'steps': one_day_data[RES_ID_STEPS]["activities-steps"][0]["value"],
             'calories': one_day_data[RES_ID_CALORIES]["activities-calories"][0]["value"],
             'distance': one_day_data[RES_ID_DISTANCE]["activities-distance"][0]["value"]
-            }
-        doc_ref.set(data)
+        }
 
-    def _save_one_day_intraday_data(self, date_string, one_day_data):
-        year_month = date_string[:7]  # Extract YYYY-MM
-        day = date_string[-2:]  # Extract DD
-        step_data = self._get_dataset(one_day_data, RES_ID_STEPS, KEY_INTRA_STEPS)
-        calorie_data = self._get_dataset(one_day_data, RES_ID_CALORIES, KEY_INTRA_CALORIES)
-        distance_data = self._get_dataset(one_day_data, RES_ID_DISTANCE, KEY_INTRA_DISTANCE)
+        # Save the data in the document
+        day_doc_ref.set(data)
+
+
+
+
         
-        for step_entry, calorie_entry, distance_entry in zip(step_data, calorie_data, distance_data):
-            hour_minute = step_entry["time"]  # Adjusted assuming direct list of entries
-            data = {
-                'steps': step_entry["value"],
-                'calories': calorie_entry["value"],
-                'distance': distance_entry["value"]
-                }
-            doc_ref = db.collection('activity_by_minute').document(f'{self.account.person_id}').collection(f'{year_month}').document(f'{day}').collection('times').document(f'{hour_minute}')
-            doc_ref.set(data)
+    def _save_one_day_intraday_data(self, date_string, one_day_data):
+        year = date_string[:4]  # Extract YYYY
+        month_day = date_string[5:]  # Extract MM-DD for document naming
+        person_id_str = str(self.account.person_id)  # Ensure person_id is a string
+
+        # Initialize containers for aggregated data
+        steps_data = []
+        calories_data = []
+        distance_data = []
+
+        # Extract and aggregate intraday data
+        steps_entries = self._get_dataset(one_day_data, RES_ID_STEPS, KEY_INTRA_STEPS)
+        calories_entries = self._get_dataset(one_day_data, RES_ID_CALORIES, KEY_INTRA_CALORIES)
+        distance_entries = self._get_dataset(one_day_data, RES_ID_DISTANCE, KEY_INTRA_DISTANCE)
+
+        for entry in steps_entries:
+            steps_data.append({'time': entry["time"], 'value': entry["value"]})
+        for entry in calories_entries:
+            calories_data.append({'time': entry["time"], 'value': entry["value"]})
+        for entry in distance_entries:
+            distance_data.append({'time': entry["time"], 'value': entry["value"]})
+
+        # Prepare the bundled data for a single Firestore document
+        bundled_data = {
+            'steps': steps_data,
+            'calories': calories_data,
+            'distance': distance_data
+        }
+
+        # Define the document reference within Firestore
+        # Using 'person_intraday_fitness' as the top-level collection
+        doc_ref = db.collection('person_intraday_fitness').document(person_id_str) \
+                    .collection(year).document(month_day)
+
+        # Set the bundled intraday data in a single operation, with merge=True to avoid overwriting
+        doc_ref.set(bundled_data, merge=True)
+
+
 
     # def _save_one_day_data(self, date_string, one_day_data):
     #      try:
