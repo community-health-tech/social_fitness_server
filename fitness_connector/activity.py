@@ -63,6 +63,8 @@ class PersonActivity(object):
         Pull the person's data since the last pull and save to database
         """
         self.device = Device(self.fitbit, self.account)
+        print(self.account.last_pull_time)
+        print(self.device.last_sync_time)
         self._pull_intraday_data(
             self.account.last_pull_time, 
             self.device.last_sync_time
